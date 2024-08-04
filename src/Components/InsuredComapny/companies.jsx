@@ -125,7 +125,7 @@ function Company() {
                   <FaArrowLeft className="mr-2" />
                   Previous
                 </button>
-                <button onClick={() => navigate('/users')}  className="flex items-center bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200">
+                <button onClick={() => navigate('/users')} className="flex items-center bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200">
                   Next
                   <FaArrowRight className="ml-2" />
                 </button>
