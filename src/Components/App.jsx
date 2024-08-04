@@ -21,13 +21,19 @@ import AddClaims from '../Claim/addclaims';
 import AddPolicy from './Policy/addpolicy';
 import EditPolicy from './Policy/editpolicy';
 import EditClaim from '../Claim/editClaim';
+
 // Component to conditionally render Header based on route
 const AppHeader = () => {
   const location = useLocation();
   return location.pathname !== '/' ? <Header /> : null;
 };
 
-function App() {
+const App = () => {
+  // Example usage of API base URL from environment variables
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
+  console.log('API Base URL:', apiUrl); // For debugging purposes
+
   return (
     <Router>
       {/* Conditionally render the Header component */}
@@ -52,15 +58,9 @@ function App() {
         <Route path="/policies" element={<AddPolicy/>} />
         <Route path="/editpolicy" element={<EditPolicy/>} />
         <Route path="/editclaim" element={<EditClaim/>} />
-        
-
-
-
-
-
       </Routes>
     </Router>
   );
-}
+};
 
 export default App;
