@@ -21,13 +21,13 @@ function Company() {
   }, []);
 
   const fetchCompanies = () => {
-    axios.get('http://localhost:3001/companies')
+    axios.get('https://bminsurancebrokers.com/imlserver/companies')
       .then(response => setCompanies(response.data))
       .catch(error => console.error('Error fetching companies', error));
   };
 
   const fetchUsers = () => {
-    axios.get('http://localhost:3001/users')
+    axios.get('https://bminsurancebrokers.com/imlserver/users')
       .then(response => setUsers(response.data))
       .catch(error => console.error('Error fetching users', error));
   };
@@ -43,7 +43,7 @@ function Company() {
 
   const handleSubmit = e => {
     e.preventDefault();
-    axios.post('http://localhost:3001/companies', form)
+    axios.post('https://bminsurancebrokers.com/imlserver/companies', form)
       .then(() => {
         fetchCompanies();
         resetForm();
@@ -125,7 +125,7 @@ function Company() {
                   <FaArrowLeft className="mr-2" />
                   Previous
                 </button>
-                <button onClick={() => navigate('/users')}  className="flex items-center bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200">
+                <button onClick={() => navigate('/users')} className="flex items-center bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200">
                   Next
                   <FaArrowRight className="ml-2" />
                 </button>
