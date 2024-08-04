@@ -26,7 +26,7 @@ function EditCompany() {
   useEffect(() => {
     const fetchCompany = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/companies`);
+        const response = await axios.get(`https://bminsurancebrokers.com/imlserver/companies`);
         for (let index = 0; index < response.data.length; index++) {
           if(response.data[index].id === idEdit){
             usersCompany.push(response.data[index])
@@ -76,7 +76,7 @@ function EditCompany() {
   
     try {
       // Make the API request to update the company
-      await axios.put(`http://localhost:3001/companies/${idEdit}`, form);
+      await axios.put(`https://bminsurancebrokers.com/imlserver/companies/${idEdit}`, form);
   
       // Handle successful update
       setAlertMessage('Company details updated successfully!');

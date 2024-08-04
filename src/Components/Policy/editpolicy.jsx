@@ -42,7 +42,7 @@ function EditPolicy() {
   useEffect(() => {
     const fetchPolicy = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/policies');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/policies');
         for (let index = 0; index < response.data.length; index++) {
           if (response.data[index].policy_id === idEdit) {
             policies.push(response.data[index]);
@@ -60,7 +60,7 @@ function EditPolicy() {
 
     const fetchCompanies = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/companies');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/companies');
         setCompanies(response.data);
       } catch (error) {
         console.error('Error fetching companies:', error);
@@ -71,7 +71,7 @@ function EditPolicy() {
 
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/users');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/users');
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -82,7 +82,7 @@ function EditPolicy() {
 
     const fetchVehicles = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/vehicles');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/vehicles');
         setVehicles(response.data);
       } catch (error) {
         console.error('Error fetching vehicles:', error);
@@ -124,7 +124,7 @@ function EditPolicy() {
     }
 
     try {
-      await axios.put(`http://localhost:3001/policies/${idEdit}`, form);
+      await axios.put(`https://bminsurancebrokers.com/imlserver/policies/${idEdit}`, form);
       setAlertMessage('Policy details updated successfully!');
       setAlertType('success');
       navigate('/viewpolicies'); // Adjust navigation as needed

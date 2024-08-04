@@ -28,7 +28,7 @@ function EditUser() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/users');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/users');
         for (let index = 0; index < response.data.length; index++) {
           if (response.data[index].id === idEdit) {
             users.push(response.data[index]);
@@ -46,7 +46,7 @@ function EditUser() {
 
     const fetchCompanies = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/companies');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/companies');
         setCompanies(response.data);
       } catch (error) {
         console.error('Error fetching companies:', error);
@@ -83,7 +83,7 @@ function EditUser() {
     }
 
     try {
-      await axios.put(`http://localhost:3001/users/${idEdit}`, form);
+      await axios.put(`https://bminsurancebrokers.com/imlserver/users/${idEdit}`, form);
       setAlertMessage('User details updated successfully!');
       setAlertType('success');
       navigate('/viewusers'); // Adjust navigation as needed

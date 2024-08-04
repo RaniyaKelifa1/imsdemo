@@ -19,9 +19,9 @@ const ViewUserVehicles = () => {
     const fetchData = async () => {
       try {
         const [vehiclesResponse, usersResponse, companiesResponse] = await Promise.all([
-          axios.get('http://localhost:3001/vehicles'),
-          axios.get('http://localhost:3001/users'),
-          axios.get('http://localhost:3001/companies'),
+          axios.get('https://bminsurancebrokers.com/imlserver/vehicles'),
+          axios.get('https://bminsurancebrokers.com/imlserver/users'),
+          axios.get('https://bminsurancebrokers.com/imlserver/companies'),
         ]);
 
         // Filter vehicles to show only those owned by the selected user
@@ -98,7 +98,7 @@ const ViewUserVehicles = () => {
   const handleDelete = async (vehicleId) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
       try {
-        await axios.delete(`http://localhost:3001/vehicles/${vehicleId}`);
+        await axios.delete(`https://bminsurancebrokers.com/imlserver/vehicles/${vehicleId}`);
         setVehicles(prevVehicles => prevVehicles.filter(vehicle => vehicle.id !== vehicleId));
       } catch (error) {
         console.error('Error deleting vehicle:', error);

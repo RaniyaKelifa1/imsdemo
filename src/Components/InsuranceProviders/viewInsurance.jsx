@@ -15,7 +15,7 @@ const ViewInsuranceProviders = () => {
   useEffect(() => {
     const fetchInsuranceProviders = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/insurance_providers');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/insurance_providers');
         setInsuranceProviders(response.data);
       } catch (error) {
         console.error('Error fetching insurance providers:', error);
@@ -30,7 +30,7 @@ const ViewInsuranceProviders = () => {
       const confirmDelete = window.confirm('Are you sure you want to delete this insurance provider?');
       if (!confirmDelete) return;
 
-      await axios.delete(`http://localhost:3001/insurance_providers/${id}`);
+      await axios.delete(`https://bminsurancebrokers.com/imlserver/insurance_providers/${id}`);
       setInsuranceProviders(prevProviders => prevProviders.filter(provider => provider.insurance_provider_id !== id));
       alert('Insurance provider successfully deleted.');
     } catch (error) {

@@ -21,13 +21,13 @@ function Company() {
   }, []);
 
   const fetchCompanies = () => {
-    axios.get('http://localhost:3001/companies')
+    axios.get('https://bminsurancebrokers.com/imlserver/companies')
       .then(response => setCompanies(response.data))
       .catch(error => console.error('Error fetching companies', error));
   };
 
   const fetchUsers = () => {
-    axios.get('http://localhost:3001/users')
+    axios.get('https://bminsurancebrokers.com/imlserver/users')
       .then(response => setUsers(response.data))
       .catch(error => console.error('Error fetching users', error));
   };
@@ -43,7 +43,7 @@ function Company() {
 
   const handleSubmit = e => {
     e.preventDefault();
-    axios.post('http://localhost:3001/companies', form)
+    axios.post('https://bminsurancebrokers.com/imlserver/companies', form)
       .then(() => {
         fetchCompanies();
         resetForm();

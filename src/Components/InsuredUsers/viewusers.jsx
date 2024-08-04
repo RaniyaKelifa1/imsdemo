@@ -17,7 +17,7 @@ const ViewUsers = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/users');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/users');
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -26,7 +26,7 @@ const ViewUsers = () => {
 
     const fetchCompanies = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/companies');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/companies');
         setCompanies(response.data);
       } catch (error) {
         console.error('Error fetching companies:', error);
@@ -35,7 +35,7 @@ const ViewUsers = () => {
 
     const fetchVehicles = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/vehicles');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/vehicles');
         setVehicles(response.data);
       } catch (error) {
         console.error('Error fetching vehicles:', error);
@@ -54,7 +54,7 @@ const ViewUsers = () => {
         return;
       }
 
-      await axios.delete(`http://localhost:3001/users/${id}`);
+      await axios.delete(`https://bminsurancebrokers.com/imlserver/users/${id}`);
       setUsers(prevUsers => prevUsers.filter(user => user.id !== id));
       alert('User successfully deleted.');
     } catch (error) {

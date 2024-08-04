@@ -32,7 +32,7 @@ function EditVehicle() {
   useEffect(() => {
     const fetchVehicle = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/vehicles');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/vehicles');
         for (let index = 0; index < response.data.length; index++) {
           if (response.data[index].id === idEdit) {
             vehicles.push(response.data[index]);
@@ -50,7 +50,7 @@ function EditVehicle() {
 
     const fetchCompanies = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/companies');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/companies');
         setCompanies(response.data);
       } catch (error) {
         console.error('Error fetching companies:', error);
@@ -61,7 +61,7 @@ function EditVehicle() {
 
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/users');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/users');
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -99,7 +99,7 @@ function EditVehicle() {
     }
 
     try {
-      await axios.put(`http://localhost:3001/vehicles/${idEdit}`, form);
+      await axios.put(`https://bminsurancebrokers.com/imlserver/vehicles/${idEdit}`, form);
       setAlertMessage('Vehicle details updated successfully!');
       setAlertType('success');
       navigate('/viewvehicles'); // Adjust navigation as needed

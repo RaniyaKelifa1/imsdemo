@@ -41,25 +41,25 @@ function AddPolicy() {
   }, []);
 
   const fetchUsers = () => {
-    axios.get('http://localhost:3001/users')
+    axios.get('https://bminsurancebrokers.com/imlserver/users')
       .then(response => setUsers(response.data))
       .catch(error => console.error('Error fetching users', error));
   };
 
   const fetchVehicles = () => {
-    axios.get('http://localhost:3001/vehicles')
+    axios.get('https://bminsurancebrokers.com/imlserver/vehicles')
       .then(response => setVehicles(response.data))
       .catch(error => console.error('Error fetching vehicles', error));
   };
 
   const fetchPolicies = () => {
-    axios.get('http://localhost:3001/policies')
+    axios.get('https://bminsurancebrokers.com/imlserver/policies')
       .then(response => setPolicies(response.data))
       .catch(error => console.error('Error fetching policies', error));
   };
 
   const fetchProviders = () => {
-    axios.get('http://localhost:3001/insurance_providers') // Adjust the endpoint as necessary
+    axios.get('https://bminsurancebrokers.com/imlserver/insurance_providers') // Adjust the endpoint as necessary
       .then(response => setProviders(response.data))
       .catch(error => console.error('Error fetching providers', error));
   };
@@ -94,7 +94,7 @@ function AddPolicy() {
       ...form,
       created_at: form.created_at.replace('T', ' ') // Convert 'T' to space for SQL
     };
-    axios.post('http://localhost:3001/policies', formattedForm)
+    axios.post('https://bminsurancebrokers.com/imlserver/policies', formattedForm)
       .then(() => {
         fetchPolicies();
         navigate('/policies');

@@ -19,8 +19,8 @@ const ViewCompanyUsers = () => {
     const fetchData = async () => {
       try {
         const [usersResponse, companiesResponse] = await Promise.all([
-          axios.get('http://localhost:3001/users'),
-          axios.get('http://localhost:3001/companies'),
+          axios.get('https://bminsurancebrokers.com/imlserver/users'),
+          axios.get('https://bminsurancebrokers.com/imlserver/companies'),
         ]);
 
         // Filter users to show only those belonging to the selected company
@@ -38,7 +38,7 @@ const ViewCompanyUsers = () => {
     };
     const fetchVehicles = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/vehicles');
+        const response = await axios.get('https://bminsurancebrokers.com/imlserver/vehicles');
         setVehicles(response.data);
       } catch (error) {
         console.error('Error fetching vehicles:', error);
@@ -111,7 +111,7 @@ const ViewCompanyUsers = () => {
   const handleDelete = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        await axios.delete(`http://localhost:3001/users/${userId}`);
+        await axios.delete(`https://bminsurancebrokers.com/imlserver/users/${userId}`);
         setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
       } catch (error) {
         console.error('Error deleting user:', error);
