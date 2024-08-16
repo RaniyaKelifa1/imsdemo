@@ -1,484 +1,481 @@
 const cors = require('cors');
 const express = require('express');
-const mysql = require('mysql2');
-const { v4: uuidv4 } = require('uuid'); // To generate UUIDs
+const mysql = require('mysql2/promise');
+const { v4: uuidv4 } = require('uuid');
+require('dotenv').config();
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { check, validationResult } = require('express-validator');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const hostname = '127.0.0.1';
+const PORT = process.env.PORT || 4000;
 
-// Use CORS to allow requests from other domains
 app.use(cors());
-app.use(express.json()); // Parse JSON request bodies
+app.use(express.json());
+app.use(helmet());
 
-// MySQL Connection Configuration
-const db = mysql.createConnection({
-  host: 'localhost', // Server address
-  user: 'root', // Replace with your MySQL username
-  password: '2151215121', // Replace with your MySQL password
-  database: 'imlphaseone', // Replace with your database name
-  port: 3307 // Port number (3307 in your case)
+// Rate limiting to prevent abuse
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
 });
+app.use(limiter);
 
+// MySQL Connection Pool Configuration
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '2151215121',
+  database: process.env.DB_NAME || 'imlphasetwo',
+  port: process.env.DB_PORT || 3307, // Ensure this matches your local MySQL port
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+};
 
-// Connect to MySQL database
-db.connect(err => {
-  if (err) {
+let pool;
+
+async function initializeDatabase() {
+  try {
+    pool = mysql.createPool(dbConfig);
+    console.log('Connected to MySQL database using connection pool');
+  } catch (err) {
     console.error('Error connecting to MySQL:', err);
-    return;
+    process.exit(1);
   }
-  console.log('Connected to MySQL database');
+}
+
+// Initialize database
+initializeDatabase();
+
+// Helper function for database query execution
+async function executeQuery(query, params) {
+  const connection = await pool.getConnection();
+  try {
+    const [results] = await connection.execute(query, params);
+    return results;
+  } catch (error) {
+    console.error('Error executing query:', error);
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+// Example route to test the database connection
+app.get('/imlserver', (req, res) => {
+  res.send('Welcome to the API----new');
 });
 
-// Default route
-app.get('/', (req, res) => {
-  res.send('Welcome to the API');
-});
-
-// Users CRUD
-app.get('/users', (req, res) => {
-  db.query('SELECT * FROM users', (err, results) => {
-    if (err) {
-      console.error('Error fetching users:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
+// Clients CRUD
+app.get('/imlserver/clients', async (req, res) => {
+  try {
+    const results = await executeQuery('SELECT * FROM clients', []);
     res.json(results);
-  });
+  } catch (err) {
+    console.error('Error fetching insurance providers:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-app.post('/users', (req, res) => {
-  const { name, email, password, phone_number, role, status, company_id } = req.body;
-  const id = uuidv4();
-  const created_at = new Date();
-  db.query(
-    'INSERT INTO users (id, name, email, password, phone_number, role, status, company_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, name, email, password, phone_number, role, status, company_id, created_at],
-    (err, result) => {
-      if (err) {
-        console.error('Error adding user:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.status(201).send(`User added with ID: ${id}`);
-    }
-  );
+app.post('/imlserver/clients', [
+  check('name').notEmpty().withMessage('Name is required'),
+  check('email').isEmail().withMessage('Invalid email address'),
+  check('phoneNumber').notEmpty().withMessage('Phone number is required'),
+  // Additional validation rules if needed
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { name, email, phoneNumber, address_city, address_subcity, address_wereda, address_houseno, clientType, contactPerson } = req.body;
+
+  let query;
+  let values;
+
+  if (clientType === 'Company') {
+    query = 'INSERT INTO clients (name, clientType, email, phoneNumber, address_city, address_subcity, address_wereda, address_houseno, contactPerson) VALUES (?,?,  ?, ?, ?, ?, ?, ?, ?)';
+    values = [name, clientType, email, phoneNumber, address_city, address_subcity, address_wereda, address_houseno, contactPerson];
+  } else if (clientType === 'Individual') {
+    query = 'INSERT INTO clients (name, clientType, email, phoneNumber, address_city, address_subcity, address_wereda, address_houseno) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+    values = [name, email, clientType, phoneNumber, address_city, address_subcity, address_wereda, address_houseno];
+  } else {
+    return res.status(400).json({ errors: [{ msg: 'Invalid client type' }] });
+  }
+
+  try {
+    const result = await executeQuery(query, values);
+    res.status(201).json({
+      id: result.insertId,
+      name,
+      email,
+      phoneNumber,
+      address_city,
+      address_subcity,
+      address_wereda,
+      address_houseno,
+      contactPerson: clientType === 'Company' ? contactPerson : undefined
+    });
+  } catch (err) {
+    console.error('Error creating client:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-app.put('/users/:id', (req, res) => {
+app.put('/imlserver/clients/:id', [
+  check('name').notEmpty().withMessage('Name is required'),
+  check('email').isEmail().withMessage('Invalid email address'),
+  check('phoneNumber').notEmpty().withMessage('Phone number is required'),
+  // Add more validation rules as needed
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { id } = req.params;
-  const { name, email, password, phone_number, role, status, company_id } = req.body;
-  db.query(
-    'UPDATE users SET name = ?, email = ?, password = ?, phone_number = ?, role = ?, status = ?, company_id = ? WHERE id = ?',
-    [name, email, password, phone_number, role, status, company_id, id],
-    (err, result) => {
-      if (err) {
-        console.error('Error updating user:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.send(`User with ID: ${id} updated`);
-    }
-  );
+  const { name, email, phoneNumber, address_city, address_subcity, address_wereda, address_houseno } = req.body;
+
+  try {
+    await executeQuery(
+      'UPDATE clients SET name = ?, email = ?, phoneNumber = ?, address_city = ?, address_subcity = ?, address_wereda = ?, address_houseno = ? WHERE ClientID = ?',
+      [name, email, phoneNumber, address_city, address_subcity, address_wereda, address_houseno, id]
+    );
+    res.status(200).send('Client updated successfully');
+  } catch (err) {
+    console.error('Error updating client:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-app.delete('/users/:id', (req, res) => {
+app.delete('/imlserver/clients/:id', async (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM users WHERE id = ?', [id], (err, result) => {
-    if (err) {
-      console.error('Error deleting user:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    res.send(`User with ID: ${id} deleted`);
-  });
+
+  try {
+    await executeQuery('DELETE FROM clients WHERE ClientID = ?', [id]);
+    res.status(200).send('Client deleted successfully');
+  } catch (err) {
+    console.error('Error deleting client:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Repeat similar CRUD operations for companies, vehicles, policies, insurance_providers, payments, policy_updates, claims, reinsurance_details
-// Example for companies:
-app.get('/companies', (req, res) => {
-  db.query('SELECT * FROM companies', (err, results) => {
-    if (err) {
-      console.error('Error fetching companies:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
+// Insurance Providers CRUD
+app.get('/imlserver/insurance-providers', async (req, res) => {
+  try {
+    const results = await executeQuery('SELECT * FROM insuranceproviders', []);
     res.json(results);
-  });
+  } catch (err) {
+    console.error('Error fetching insurance providers:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-app.post('/companies', (req, res) => {
-  const { company_name, phone_number, tin_number, address, contact_person } = req.body;
-  const id = uuidv4();
-  const created_at = new Date();
-  db.query(
-    'INSERT INTO companies (id, company_name, phone_number, tin_number, address, contact_person, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [id, company_name, phone_number, tin_number, address, contact_person, created_at],
-    (err, result) => {
-      if (err) {
-        console.error('Error adding company:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.status(201).send(`Company added with ID: ${id}`);
-    }
-  );
-});
+app.post('/imlserver/insurance-providers', [
+  check('company_name').notEmpty().withMessage('Company name is required'),
+  // Add more validation rules as needed
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-// Similar PUT and DELETE routes for companies
-app.put('/companies/:id', (req, res) => {
-  const { id } = req.params;
-  const { company_name, phone_number, tin_number, address, contact_person } = req.body;
-  db.query(
-    'UPDATE companies SET company_name = ?, phone_number = ?, tin_number = ?, address = ?, contact_person = ? WHERE id = ?',
-    [company_name, phone_number, tin_number, address, contact_person, id],
-    (err, result) => {
-      if (err) {
-        console.error('Error updating company:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.send(`Company with ID: ${id} updated`);
-    }
-  );
-});
-
-app.delete('/companies/:id', (req, res) => {
-  const { id } = req.params;
-  db.query('DELETE FROM companies WHERE id = ?', [id], (err, result) => {
-    if (err) {
-      console.error('Error deleting company:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    res.send(`Company with ID: ${id} deleted`);
-  });
-});
-
-app.put('/vehicles/:id', (req, res) => {
-  const { id } = req.params;
-  const { license_plate, model, manufacturer, year, chassis_number, engine_number, cc, vehicle_type, owner_id, company_id } = req.body;
-  db.query(
-    'UPDATE vehicles SET license_plate = ?, model = ?, manufacturer = ?, year = ?, chassis_number = ?, engine_number = ?, cc = ?, vehicle_type = ?, owner_id = ?, company_id = ? WHERE id = ?',
-    [license_plate, model, manufacturer, year, chassis_number, engine_number, cc, vehicle_type, owner_id, company_id, id],
-    (err, result) => {
-      if (err) {
-        console.error('Error updating vehicle:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.send(`Vehicle with ID: ${id} updated`);
-    }
-  );
-});
-app.get('/vehicles', (req, res) => {
-  db.query('SELECT * FROM vehicles', (err, results) => {
-    if (err) {
-      console.error('Error fetching vehicles:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    res.json(results);
-  });
-});
-app.post('/vehicles', (req, res) => {
-  const { license_plate, model, manufacturer, year, chassis_number, engine_number, cc, vehicle_type, owner_id, company_id } = req.body;
-  const id = uuidv4();
-  const created_at = new Date();
-  db.query(
-    'INSERT INTO vehicles (id, license_plate, model, manufacturer, year, chassis_number, engine_number, cc, vehicle_type, owner_id, company_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, license_plate, model, manufacturer, year, chassis_number, engine_number, cc, vehicle_type, owner_id, company_id, created_at],
-    (err, result) => {
-      if (err) {
-        console.error('Error adding vehicle:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.status(201).send(`Vehicle added with ID: ${id}`);
-    }
-  );
-});
-app.delete('/vehicles/:id', (req, res) => {
-  const { id } = req.params;
-  db.query('DELETE FROM vehicles WHERE id = ?', [id], (err, result) => {
-    if (err) {
-      console.error('Error deleting vehicle:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    res.send(`Vehicle with ID: ${id} deleted`);
-  });
-});
-app.post('/insurance_providers', (req, res) => {
   const { company_name, contact_email, contact_phone } = req.body;
-  const insurance_provider_id = uuidv4();
-  const created_at = new Date();
-  db.query(
-    'INSERT INTO insurance_providers (insurance_provider_id, company_name, contact_email, contact_phone, created_at) VALUES (?, ?, ?, ?, ?)',
-    [insurance_provider_id, company_name, contact_email, contact_phone, created_at],
-    (err, result) => {
-      if (err) {
-        console.error('Error adding insurance provider:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.status(201).send(`Insurance provider added with ID: ${insurance_provider_id}`);
-    }
-  );
+
+  try {
+    const result = await executeQuery(
+      'INSERT INTO insuranceproviders (company_name, contact_email, contact_phone) VALUES (?, ?, ?)',
+      [company_name, contact_email, contact_phone]
+    );
+    res.status(201).json({ id: result.insertId, company_name, contact_email, contact_phone });
+  } catch (err) {
+    console.error('Error creating insurance provider:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Read Insurance Providers
-app.get('/insurance_providers', (req, res) => {
-  db.query('SELECT * FROM insurance_providers', (err, results) => {
-    if (err) {
-      console.error('Error fetching insurance providers:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    res.json(results);
-  });
-});
+app.put('/imlserver/insurance-providers/:id', [
+  check('company_name').notEmpty().withMessage('Company name is required'),
+  // Add more validation rules as needed
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-// Update Insurance Provider
-app.put('/insurance_providers/:id', (req, res) => {
   const { id } = req.params;
   const { company_name, contact_email, contact_phone } = req.body;
-  db.query(
-    'UPDATE insurance_providers SET company_name = ?, contact_email = ?, contact_phone = ? WHERE insurance_provider_id = ?',
-    [company_name, contact_email, contact_phone, id],
-    (err, result) => {
-      if (err) {
-        console.error('Error updating insurance provider:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.send(`Insurance provider with ID: ${id} updated`);
-    }
-  );
+
+  try {
+    await executeQuery(
+      'UPDATE insuranceproviders SET company_name = ?, contact_email = ?, contact_phone = ? WHERE id = ?',
+      [company_name, contact_email, contact_phone, id]
+    );
+    res.status(200).send('Insurance provider updated successfully');
+  } catch (err) {
+    console.error('Error updating insurance provider:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Delete Insurance Provider
-app.delete('/insurance_providers/:id', (req, res) => {
+app.delete('/imlserver/insurance-providers/:id', async (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM insurance_providers WHERE insurance_provider_id = ?', [id], (err, result) => {
-    if (err) {
-      console.error('Error deleting insurance provider:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    res.send(`Insurance provider with ID: ${id} deleted`);
-  });
+
+  try {
+    await executeQuery('DELETE FROM insuranceproviders WHERE id = ?', [id]);
+    res.status(200).send('Insurance provider deleted successfully');
+  } catch (err) {
+    console.error('Error deleting insurance provider:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Create Policy
-app.post('/policies', (req, res) => {
-  const {
-    policy_name, policy_details, provider_id, user_id, vehicle_id, category,
-    reinsured, renewal_count, company_id, sum_insured_including_tax, premium_own_damage,
-    premium_third_party, premium_pvt, premium_workmen, premium_bsg, premium_property_damage,
-    premium_death, third_party_extension, total_premium, created_at
+// Policies CRUD
+app.get('/imlserver/policies', async (req, res) => {
+  try {
+    const results = await executeQuery('SELECT * FROM policies', []);
+    res.json(results);
+  } catch (err) {
+    console.error('Error fetching policies:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
+app.post('/imlserver/policies', async (req, res) => {
+  try {
+    const {
+      PolicyNo, clientID, providerID, optionID,
+      branch, premium, policyPeriodStart, policyPeriodEnd,
+      geographicalArea, commission, vehicles
+    } = req.body;
+
+    // Validate inputs as needed
+
+    // Insert the policy into the Policies table
+    const query = `
+      INSERT INTO Policies 
+      (PolicyNo, clientID, providerID, optionID, branch, premium, 
+      policyPeriodStart, policyPeriodEnd, geographicalArea, commission) 
+      VALUES (?, ?, ?, ?, ?, ?, ?,  ?, ?, ?)
+    `;
+    const values = [
+      PolicyNo, clientID, providerID, optionID,  branch, premium,
+      policyPeriodStart, policyPeriodEnd, geographicalArea, commission
+    ];
+
+    const newPolicy = await executeQuery(query, values);
+    const policyID = newPolicy.insertId;
+
+    // Insert associated vehicles into the Vehicles table
+    if (vehicles && vehicles.length > 0) {
+      for (const vehicle of vehicles) {
+        const vehicleQuery = `
+          INSERT INTO Vehicles (policyID, makeAndModel, year, bodyType, plateNumber) 
+          VALUES (?, ?, ?, ?, ?)
+        `;
+        const vehicleValues = [
+          policyID, vehicle.makeAndModel, vehicle.year, vehicle.bodyType, vehicle.plateNumber
+        ];
+
+        await executeQuery(vehicleQuery, vehicleValues);
+      }
+    }
+
+    res.status(201).send({ message: 'Policy and vehicles added successfully' });
+  } catch (error) {
+    console.error('Error inserting policy and vehicles:', error);
+    res.status(500).send({ error: 'Failed to add policy and vehicles' });
+  }
+});
+
+
+app.put('/imlserver/policies/:id', [
+  check('PolicyNo').notEmpty().withMessage('Policy number is required'),
+  // Add more validation rules as needed
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { id } = req.params;
+  let {
+    PolicyNo,
+    ClientID,
+    ProviderID,
+    OptionID,
+    Branch,
+    Premium,
+    PolicyPeriodStart,
+    PolicyPeriodEnd,
+    GeographicalArea,
+    Commission
   } = req.body;
-  
-  const policy_id = uuidv4();
-  
-  db.query(
-    'INSERT INTO policies (policy_id, policy_name, policy_details, provider_id, user_id, vehicle_id, category, reinsured, renewal_count, company_id, sum_insured_including_tax, premium_own_damage, premium_third_party, premium_pvt, premium_workmen, premium_bsg, premium_property_damage, premium_death, third_party_extension, total_premium, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [policy_id, policy_name, policy_details, provider_id, user_id, vehicle_id, category, reinsured, renewal_count, company_id, sum_insured_including_tax, premium_own_damage, premium_third_party, premium_pvt, premium_workmen, premium_bsg, premium_property_damage, premium_death, third_party_extension, total_premium, created_at],
-    (err, result) => {
-      if (err) {
-        console.error('Error adding policy:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.status(201).send(`Policy added with ID: ${policy_id}`);
-    }
-  );
+
+  // Replace undefined with null
+  PolicyNo = PolicyNo || null;
+  ClientID = ClientID || null;
+  ProviderID = ProviderID || null;
+  OptionID = OptionID || null;
+  Branch = Branch || null;
+  Premium = Premium || null;
+  PolicyPeriodStart = PolicyPeriodStart || null;
+  PolicyPeriodEnd = PolicyPeriodEnd || null;
+  GeographicalArea = GeographicalArea || null;
+  Commission = Commission || null;
+
+  try {
+    await executeQuery(
+      `UPDATE policies 
+       SET PolicyNo = ?, 
+           ClientID = ?, 
+           ProviderID = ?, 
+           OptionID = ?, 
+           Branch = ?, 
+           Premium = ?, 
+           PolicyPeriodStart = ?, 
+           PolicyPeriodEnd = ?, 
+           GeographicalArea = ?, 
+           Commission = ?
+       WHERE PolicyID = ?`,
+      [PolicyNo, ClientID, ProviderID, OptionID, Branch, Premium, PolicyPeriodStart, PolicyPeriodEnd, GeographicalArea, Commission, id]
+    );
+    res.status(200).send('Policy updated successfully');
+  } catch (err) {
+    console.error('Error updating policy:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Read Policies
-app.post('/policies', (req, res) => {
-  const {
-    policy_name, policy_details, provider_id, user_id, vehicle_id, category,
-    reinsured, renewal_count, company_id, sum_insured_including_tax, premium_own_damage,
-    premium_third_party, premium_pvt, premium_workmen, premium_bsg, premium_property_damage,
-    premium_death, third_party_extension, total_premium, created_at
-  } = req.body;
-  
-  const policy_id = uuidv4();
-  
-  db.query(
-    'INSERT INTO policies (policy_id, policy_name, policy_details, provider_id, user_id, vehicle_id, category, reinsured, renewal_count, company_id, sum_insured_including_tax, premium_own_damage, premium_third_party, premium_pvt, premium_workmen, premium_bsg, premium_property_damage, premium_death, third_party_extension, total_premium, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [policy_id, policy_name, policy_details, provider_id, user_id, vehicle_id, category, reinsured, renewal_count, company_id, sum_insured_including_tax, premium_own_damage, premium_third_party, premium_pvt, premium_workmen, premium_bsg, premium_property_damage, premium_death, third_party_extension, total_premium, created_at],
-    (err, result) => {
-      if (err) {
-        console.error('Error adding policy:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.status(201).send(`Policy added with ID: ${policy_id}`);
-    }
-  );
-});
 
-// Update Policy
-app.put('/policies/:id', (req, res) => {
+app.delete('/imlserver/policies/:id', async (req, res) => {
   const { id } = req.params;
-  const {
-    policy_name, policy_details, provider_id, user_id, vehicle_id, category,
-    reinsured, renewal_count, company_id, sum_insured_including_tax, premium_own_damage,
-    premium_third_party, premium_pvt, premium_workmen, premium_bsg, premium_property_damage,
-    premium_death, third_party_extension, total_premium, created_at
-  } = req.body;
-  
-  db.query(
-    'UPDATE policies SET policy_name = ?, policy_details = ?, provider_id = ?, user_id = ?, vehicle_id = ?, category = ?, reinsured = ?, renewal_count = ?, company_id = ?, sum_insured_including_tax = ?, premium_own_damage = ?, premium_third_party = ?, premium_pvt = ?, premium_workmen = ?, premium_bsg = ?, premium_property_damage = ?, premium_death = ?, third_party_extension = ?, total_premium = ?, created_at = ? WHERE policy_id = ?',
-    [policy_name, policy_details, provider_id, user_id, vehicle_id, category, reinsured, renewal_count, company_id, sum_insured_including_tax, premium_own_damage, premium_third_party, premium_pvt, premium_workmen, premium_bsg, premium_property_damage, premium_death, third_party_extension, total_premium, created_at, id],
-    (err, result) => {
-      if (err) {
-        console.error('Error updating policy:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.send(`Policy with ID: ${id} updated`);
-    }
-  );
+console.log(id)
+  try {
+    await executeQuery('DELETE FROM policies WHERE PolicyID = ?', [id]);
+    res.status(200).send('Policy deleted successfully');
+  } catch (err) {
+    console.error('Error deleting policy:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
-
-// Delete Policy
-app.delete('/policies/:id', (req, res) => {
-  const { id } = req.params;
-  db.query('DELETE FROM policies WHERE policy_id = ?', [id], (err, result) => {
-    if (err) {
-      console.error('Error deleting policy:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    res.send(`Policy with ID: ${id} deleted`);
-  });
-});
-app.post('/claims', (req, res) => {
-  const { user_id, policy_id, claim_date, status, amount, vehicle_id, claim_details } = req.body;
-  const claim_id = uuidv4();
-  db.query(
-    'INSERT INTO claims (claim_id, user_id, policy_id, claim_date, status, amount, vehicle_id, claim_details) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [claim_id, user_id, policy_id, claim_date, status, amount, vehicle_id, claim_details],
-    (err, result) => {
-      if (err) {
-        console.error('Error adding claim:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.status(201).send(`Claim added with ID: ${claim_id}`);
-    }
-  );
-});
-
-// Read Claims
-app.get('/claims', (req, res) => {
-  db.query('SELECT * FROM claims', (err, results) => {
-    if (err) {
-      console.error('Error fetching claims:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
+// POST /imlserver/vehicles
+// Vehicles CRUD
+app.get('/imlserver/vehicles', async (req, res) => {
+  try {
+    const results = await executeQuery('SELECT * FROM vehicles', []);
     res.json(results);
-  });
+  } catch (err) {
+    console.error('Error fetching vehicles:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Update Claim
-app.put('/claims/:id', (req, res) => {
+app.post('/imlserver/vehicles', async (req, res) => {
+  let vehicles = req.body;
+
+  // Ensure that vehicles is always an array
+  if (!Array.isArray(vehicles)) {
+    vehicles = [vehicles];
+  }
+
+  console.log(`Number of vehicles: ${vehicles.length}`);
+  console.log(vehicles);
+
+  if (!vehicles || vehicles.length === 0) {
+    return res.status(400).json({ errors: [{ msg: 'Invalid vehicles data format' }] });
+  }
+
+  for (const vehicle of vehicles) {
+    try {
+      // Insert each vehicle into the database
+      await executeQuery(
+        `INSERT INTO vehicles (PolicyID, MakeAndModel, Year, BodyType, PlateNo, SerialNo, SeatCapacity, SumInsured, EngineNo, UseOfVehicle, CC_HP, DutyFree, OwnerType, AdditionalDetails, Excess)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          vehicle.PolicyID,
+          vehicle.MakeAndModel ?? null,
+          vehicle.Year ?? null,
+          vehicle.BodyType ?? null,
+          vehicle.PlateNo ?? null,
+          vehicle.SerialNo ?? null,
+          vehicle.SeatCapacity ?? null,
+          vehicle.SumInsured ?? null,
+          vehicle.EngineNo ?? null,
+          vehicle.UseOfVehicle ?? null,
+          vehicle.CC_HP ?? null,
+          vehicle.DutyFree ?? null,
+          vehicle.OwnerType ?? null,
+          vehicle.AdditionalDetails ?? null,
+          vehicle.Excess ?? null
+        ]
+      );
+    } catch (error) {
+      console.error('Error inserting vehicle:', error);
+      return res.status(500).send('Failed to add vehicle');
+    }
+  }
+
+  res.status(201).json({ message: 'Vehicles added successfully' });
+});
+
+
+
+
+app.put('/imlserver/vehicles/:id', [
+  check('PolicyID').notEmpty().withMessage('Policy ID is required'),
+  check('MakeAndModel').notEmpty().withMessage('Make and Model is required'),
+  check('Year').isInt().withMessage('Year must be a number'),
+  check('BodyType').notEmpty().withMessage('Body Type is required'),
+  check('PlateNo').notEmpty().withMessage('Plate Number is required'),
+  check('SerialNo').notEmpty().withMessage('Serial Number is required'),
+  check('SeatCapacity').isInt().withMessage('Seat Capacity must be a number'),
+  check('SumInsured').isDecimal().withMessage('Sum Insured must be a decimal number'),
+  check('EngineNo').notEmpty().withMessage('Engine Number is required'),
+  check('UseOfVehicle').notEmpty().withMessage('Use of Vehicle is required'),
+  check('CC_HP').notEmpty().withMessage('CC/HP is required'),
+  check('DutyFree').isIn(['Yes', 'No']).withMessage('Duty Free must be Yes or No'),
+  check('OwnerType').notEmpty().withMessage('Owner Type is required'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { id } = req.params;
-  const { user_id, policy_id, claim_date, status, amount, vehicle_id, claim_details } = req.body;
-  db.query(
-    'UPDATE claims SET user_id = ?, policy_id = ?, claim_date = ?, status = ?, amount = ?, vehicle_id = ?, claim_details = ? WHERE claim_id = ?',
-    [user_id, policy_id, claim_date, status, amount, vehicle_id, claim_details, id],
-    (err, result) => {
-      if (err) {
-        console.error('Error updating claim:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.send(`Claim with ID: ${id} updated`);
-    }
-  );
+  const { PolicyID, MakeAndModel, Year, BodyType, PlateNo, SerialNo, SeatCapacity, SumInsured, EngineNo, UseOfVehicle, CC_HP, DutyFree, OwnerType, AdditionalDetails, Excess } = req.body;
+
+  try {
+    await executeQuery(
+      `UPDATE vehicles SET PolicyID = ?, MakeAndModel = ?, Year = ?, BodyType = ?, PlateNo = ?, SerialNo = ?, SeatCapacity = ?, SumInsured = ?, EngineNo = ?, UseOfVehicle = ?, CC_HP = ?, DutyFree = ?, OwnerType = ?, AdditionalDetails = ?, Excess = ?
+       WHERE VehicleID = ?`,
+      [PolicyID, MakeAndModel, Year, BodyType, PlateNo, SerialNo, SeatCapacity, SumInsured, EngineNo, UseOfVehicle, CC_HP, DutyFree, OwnerType, AdditionalDetails, Excess, id]
+    );
+    res.status(200).send('Vehicle updated successfully');
+  } catch (err) {
+    console.error('Error updating vehicle:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Delete Claim
-app.delete('/claims/:id', (req, res) => {
+app.delete('/imlserver/vehicles/:id', async (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM claims WHERE claim_id = ?', [id], (err, result) => {
-    if (err) {
-      console.error('Error deleting claim:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    res.send(`Claim with ID: ${id} deleted`);
-  });
+
+  try {
+    await executeQuery('DELETE FROM vehicles WHERE VehicleID = ?', [id]);
+    res.status(200).send('Vehicle deleted successfully');
+  } catch (err) {
+    console.error('Error deleting vehicle:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-app.post('/insurance_providers', (req, res) => {
-  const { company_name, contact_email, contact_phone } = req.body;
-  const insurance_provider_id = uuidv4();
-  const created_at = new Date();
-  db.query(
-    'INSERT INTO insurance_providers (insurance_provider_id, company_name, contact_email, contact_phone, created_at) VALUES (?, ?, ?, ?, ?)',
-    [insurance_provider_id, company_name, contact_email, contact_phone, created_at],
-    (err, result) => {
-      if (err) {
-        console.error('Error adding insurance provider:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.status(201).send(`Insurance provider added with ID: ${insurance_provider_id}`);
-    }
-  );
-});
 
-// Read Insurance Providers
-app.get('/insurance_providers', (req, res) => {
-  db.query('SELECT * FROM insurance_providers', (err, results) => {
-    if (err) {
-      console.error('Error fetching insurance providers:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    res.json(results);
-  });
-});
-
-// Update Insurance Provider
-app.put('/insurance_providers/:id', (req, res) => {
-  const { id } = req.params;
-  const { company_name, contact_email, contact_phone } = req.body;
-  db.query(
-    'UPDATE insurance_providers SET company_name = ?, contact_email = ?, contact_phone = ? WHERE insurance_provider_id = ?',
-    [company_name, contact_email, contact_phone, id],
-    (err, result) => {
-      if (err) {
-        console.error('Error updating insurance provider:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-      res.send(`Insurance provider with ID: ${id} updated`);
-    }
-  );
-});
-
-// Delete Insurance Provider
-app.delete('/insurance_providers/:id', (req, res) => {
-  const { id } = req.params;
-  db.query('DELETE FROM insurance_providers WHERE insurance_provider_id = ?', [id], (err, result) => {
-    if (err) {
-      console.error('Error deleting insurance provider:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    res.send(`Insurance provider with ID: ${id} deleted`);
-  });
-});
-
-// Repeat similar CRUD operations for vehicles, policies, insurance_providers, payments, policy_updates, claims, reinsurance_details
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// Server listening
+app.listen(PORT, hostname, () => {
+  console.log(`Server running at http://${hostname}:${PORT}/`);
 });

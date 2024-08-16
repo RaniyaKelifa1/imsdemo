@@ -1,342 +1,252 @@
-// src/components/EditPolicy.jsx
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
-function EditPolicy() {
-  const [policy, setPolicy] = useState(null);
-  const [companies, setCompanies] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [vehicles, setVehicles] = useState([]);
-  const [form, setForm] = useState({
-    policy_name: '',
-    policy_details: '',
-    provider_id: '',
-    user_id: '',
-    vehicle_id: '',
-    category: '',
-    reinsured: false,
-    renewal_count: 0,
-    company_id: '',
-    sum_insured_including_tax: 0,
-    premium_own_damage: 0,
-    premium_third_party: 0,
-    premium_pvt: 0,
-    premium_workmen: 0,
-    premium_bsg: 0,
-    premium_property_damage: 0,
-    premium_death: 0,
-    third_party_extension: false,
-    total_premium: 0,
+const formatDate = (dateString) => {
+  return format(new Date(dateString), 'MM/dd/yyyy'); // You can change the format here
+};
+
+const EditPolicy = () => {
+  const [policy, setPolicy] = useState({
+    PolicyNo: '',
+    clientID: '',
+    providerID: '',
+    optionID: '',
+    branch: '',
+    premium: '',
+    policyPeriodStart: '',
+    policyPeriodEnd: '',
+    geographicalArea: '',
+    commission: ''
   });
-  const [editedFields, setEditedFields] = useState([]);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [alertType, setAlertType] = useState(''); // 'success' or 'error'
-  const navigate = useNavigate();
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const { idEdit } = location.state || {};
-  var policies = [];
+  const navigate = useNavigate(); // Use useNavigate instead of useHistory
+
+  const { id } = location.state || {};
+  const policyID = id;
 
   useEffect(() => {
     const fetchPolicy = async () => {
+      if (!policyID) return;
+    
       try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlserver/policies');
-        for (let index = 0; index < response.data.length; index++) {
-          if (response.data[index].policy_id === idEdit) {
-            policies.push(response.data[index]);
-            setPolicy(response.data[index]);
-            setForm(response.data[index]);
-            break; // Exit loop once policy is found
-          }
+        const { data } = await axios.get(`http://localhost:4000/imlserver/policies/`);
+        console.log('Fetched Data:', data);
+        const PolicyClick = data.find(item => item.PolicyID === id);
+       
+        if (PolicyClick) {
+          console.log('PolicyClick Object:', PolicyClick.PolicyPeriodStart);
+          setPolicy({
+            PolicyNo: PolicyClick.PolicyNo,
+            clientID: PolicyClick.clientID || PolicyClick.ClientID,
+            providerID: PolicyClick.ProviderID,
+            optionID: PolicyClick.OptionID,
+            branch: PolicyClick.Branch,
+            premium: PolicyClick.Premium,
+            policyPeriodStart: formatDate(PolicyClick.PolicyPeriodStart),
+            policyPeriodEnd: formatDate(PolicyClick.PolicyPeriodEnd),
+            geographicalArea: PolicyClick.GeographicalArea,
+            commission: PolicyClick.Commission
+          });
+          setLoading(false);
+        } else {
+          console.log('Policy not found.');
         }
       } catch (error) {
-        console.error('Error fetching policy data:', error);
-        setAlertMessage('Error fetching policy data.');
-        setAlertType('error');
+        console.error('Error fetching policy data:', error.response || error.message);
       }
     };
 
-    const fetchCompanies = async () => {
-      try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlserver/companies');
-        setCompanies(response.data);
-      } catch (error) {
-        console.error('Error fetching companies:', error);
-        setAlertMessage('Error fetching companies.');
-        setAlertType('error');
-      }
-    };
+    fetchPolicy();
+  }, [policyID, id]);
 
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlserver/users');
-        setUsers(response.data);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        setAlertMessage('Error fetching users.');
-        setAlertType('error');
-      }
-    };
-
-    const fetchVehicles = async () => {
-      try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlserver/vehicles');
-        setVehicles(response.data);
-      } catch (error) {
-        console.error('Error fetching vehicles:', error);
-        setAlertMessage('Error fetching vehicles.');
-        setAlertType('error');
-      }
-    };
-
-    if (idEdit) {
-      fetchPolicy();
+  useEffect(() => {
+    if (!loading) {
+      console.log('Updated Policy:', policy);
+      console.log('Client ID:', policy.policyPeriodStart);
     }
-    fetchCompanies();
-    fetchUsers();
-    fetchVehicles();
-  }, [idEdit]);
+  }, [policy, loading]);
 
-  const handleChange = e => {
-    const { name, value, type, checked } = e.target;
-    setForm(prevForm => {
-      const updatedForm = {
-        ...prevForm,
-        [name]: type === 'checkbox' ? checked : value,
-      };
-      const updatedFields = policy
-        ? Object.keys(updatedForm).filter(key => updatedForm[key] !== policy[key])
-        : Object.keys(updatedForm);
-      setEditedFields(updatedFields);
-      return updatedForm;
-    });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPolicy({ ...policy, [name]: value });
   };
 
-  const handleSubmit = async e => {
+  const handleVehicleChange = (index, e) => {
+    const { name, value } = e.target;
+    const newVehicles = [...vehicles];
+    newVehicles[index][name] = value;
+    setVehicles(newVehicles);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!idEdit) {
-      setAlertMessage('Invalid policy ID.');
-      setAlertType('error');
-      return;
-    }
-
     try {
-      await axios.put(`https://bminsurancebrokers.com/imlserver/policies/${idEdit}`, form);
-      setAlertMessage('Policy details updated successfully!');
-      setAlertType('success');
-      navigate('/viewpolicies'); // Adjust navigation as needed
+      await axios.put(`http://localhost:4000/imlserver/policies/${policyID}`,policy );
+      // navigate('/policies'); // Use navigate instead of history.push
     } catch (error) {
-      console.error('Error updating policy:', error);
-      setAlertMessage('Error updating policy. Please try again.');
-      setAlertType('error');
+      console.error('Error updating policy', error.bodyType);
     }
   };
 
-  const handleAlertClose = () => {
-    setAlertMessage('');
-    setAlertType('');
-  };
+  if (loading) return <p>Loading...</p>;
 
   return (
-    <section>
-      <div className="container mx-auto px-2">
-        <div className="grid md:grid-cols-2 gap-1">
-          {/* Edit Policy Section */}
-          <div className="bg-white p-8 rounded shadow-md flex flex-col items-center">
-            <h2 className="mb-8 text-3xl font-bold text-gray-800">Edit Policy</h2>
-            {alertMessage && (
-              <div
-                className={`mb-4 p-4 rounded-md text-white ${
-                  alertType === 'success' ? 'bg-green-500' : 'bg-red-500'
-                }`}
-              >
-                {alertMessage}
-                <button onClick={handleAlertClose} className="ml-4">
-                  &times;
-                </button>
-              </div>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md">
+    <section className="min-h-screen flex items-center justify-center bg-textured relative">
+      <div className="absolute inset-0 z-0"></div>
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="bg-gray-900 p-8 rounded shadow-md max-w-4xl mx-auto flex">
+          <div className="w-full pr-4">
+            <h2 className="mb-8 text-3xl font-bold text-gray-100 text-center">
+              Edit Policy
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
-                name="policy_name"
-                value={form.policy_name}
-                onChange={handleChange}
-                placeholder="Enter policy name"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
+                name="PolicyNo"
+                value={policy.PolicyNo}
+                onChange={handleInputChange}
+                placeholder="Policy Number"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
               />
-              <textarea
-                name="policy_details"
-                value={form.policy_details}
-                onChange={handleChange}
-                placeholder="Enter policy details"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <select
-                name="provider_id"
-                value={form.provider_id}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              >
-                <option value="">Select provider</option>
-                {users.map(user => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="user_id"
-                value={form.user_id}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              >
-                <option value="">Select user</option>
-                {users.map(user => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="vehicle_id"
-                value={form.vehicle_id}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              >
-                <option value="">Select vehicle</option>
-                {vehicles.map(vehicle => (
-                  <option key={vehicle.id} value={vehicle.id}>
-                    {vehicle.license_plate} - {vehicle.model}
-                  </option>
-                ))}
-              </select>
+  
               <input
                 type="text"
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-                placeholder="Enter category"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
+                name="clientID"
+                value={policy.clientID}
+                onChange={handleInputChange}
+                placeholder="Client ID"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
               />
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="reinsured"
-                  checked={form.reinsured}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                <label className="text-gray-800">Reinsured</label>
-              </div>
+  
+              <input
+                type="text"
+                name="providerID"
+                value={policy.providerID}
+                onChange={handleInputChange}
+                placeholder="Provider ID"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+              />
+  
+              <input
+                type="text"
+                name="optionID"
+                value={policy.optionID}
+                onChange={handleInputChange}
+                placeholder="Option ID"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+              />
+  
+              <input
+                type="text"
+                name="branch"
+                value={policy.branch}
+                onChange={handleInputChange}
+                placeholder="Branch"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+              />
+  
               <input
                 type="number"
-                name="renewal_count"
-                value={form.renewal_count}
-                onChange={handleChange}
-                placeholder="Enter renewal count"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
+                name="premium"
+                value={policy.premium}
+                onChange={handleInputChange}
+                placeholder="Premium"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
               />
-              <select
-                name="company_id"
-                value={form.company_id}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
+  
+  <div>
+  <label>Policy Period Start:</label>
+  <input
+    type="text"
+    name="policyPeriodStart"
+    value={policy.policyPeriodStart}
+    onChange={handleInputChange}
+    className="w-full py-2 px-3 rounded-md"
+  />
+</div>
+
+<div>
+  <label>Policy Period End:</label>
+  <input
+    type="text"
+    name="policyPeriodEnd"
+    value={policy.policyPeriodEnd}
+    onChange={handleInputChange}
+    className="w-full py-2 px-3 rounded-md"
+  />
+</div>
+
+  
+              <input
+                type="text"
+                name="geographicalArea"
+                value={policy.geographicalArea}
+                onChange={handleInputChange}
+                placeholder="Geographical Area"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+              />
+  
+              <input
+                type="number"
+                name="commission"
+                value={policy.commission}
+                onChange={handleInputChange}
+                placeholder="Commission"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+              />
+  
+              <h3 className="text-xl font-semibold mb-4 text-gray-100">Vehicles</h3>
+              {vehicles.map((vehicle, index) => (
+                <div key={index} className="space-y-4">
+                  <input
+                    type="text"
+                    name="makeAndModel"
+                    value={vehicle.makeAndModel || ''}
+                    onChange={(e) => handleVehicleChange(index, e)}
+                    placeholder="Make and Model"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  />
+  
+                  <input
+                    type="text"
+                    name="year"
+                    value={vehicle.year || ''}
+                    onChange={(e) => handleVehicleChange(index, e)}
+                    placeholder="Year"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  />
+  
+                  <input
+                    type="text"
+                    name="bodyType"
+                    value={vehicle.bodyType || ''}
+                    onChange={(e) => handleVehicleChange(index, e)}
+                    placeholder="Body Type"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  />
+  
+                  <input
+                    type="text"
+                    name="plateNumber"
+                    value={vehicle.plateNumber || ''}
+                    onChange={(e) => handleVehicleChange(index, e)}
+                    placeholder="Plate Number"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  />
+  
+                  {/* Add other vehicle fields similarly */}
+                </div>
+              ))}
+  
+              <button
+                type="submit"
+                className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700"
               >
-                <option value="">Select company</option>
-                {companies.map(company => (
-                  <option key={company.id} value={company.id}>
-                    {company.company_name}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                name="sum_insured_including_tax"
-                value={form.sum_insured_including_tax}
-                onChange={handleChange}
-                placeholder="Enter sum insured including tax"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <input
-                type="number"
-                name="premium_own_damage"
-                value={form.premium_own_damage}
-                onChange={handleChange}
-                placeholder="Enter premium for own damage"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <input
-                type="number"
-                name="premium_third_party"
-                value={form.premium_third_party}
-                onChange={handleChange}
-                placeholder="Enter premium for third party"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <input
-                type="number"
-                name="premium_pvt"
-                value={form.premium_pvt}
-                onChange={handleChange}
-                placeholder="Enter premium for private vehicle"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <input
-                type="number"
-                name="premium_workmen"
-                value={form.premium_workmen}
-                onChange={handleChange}
-                placeholder="Enter premium for workmen"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <input
-                type="number"
-                name="premium_bsg"
-                value={form.premium_bsg}
-                onChange={handleChange}
-                placeholder="Enter premium for BSG"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <input
-                type="number"
-                name="premium_property_damage"
-                value={form.premium_property_damage}
-                onChange={handleChange}
-                placeholder="Enter premium for property damage"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <input
-                type="number"
-                name="premium_death"
-                value={form.premium_death}
-                onChange={handleChange}
-                placeholder="Enter premium for death"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="third_party_extension"
-                  checked={form.third_party_extension}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                <label className="text-gray-800">Third Party Extension</label>
-              </div>
-              <input
-                type="number"
-                name="total_premium"
-                value={form.total_premium}
-                onChange={handleChange}
-                placeholder="Enter total premium"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <button type="submit" className="w-full py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 transition duration-200">
-                Save Changes
+                Update Policy
               </button>
             </form>
           </div>
@@ -344,6 +254,6 @@ function EditPolicy() {
       </div>
     </section>
   );
-}
+};
 
 export default EditPolicy;

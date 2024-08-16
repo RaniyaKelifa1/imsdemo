@@ -1,0 +1,19 @@
+/* AddClient.css */
+
+/* Apply textured background with animation */
+.bg-textured {
+    background: url('path/to/your-textured-image.png') repeat;
+    background-size: cover;
+    animation: backgroundAnimation 30s infinite linear;
+  }
+  
+  /* Animation to slightly shift the background */
+  @keyframes backgroundAnimation {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 100% 100%;
+    }
+  }
+  
