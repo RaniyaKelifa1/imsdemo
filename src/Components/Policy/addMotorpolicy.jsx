@@ -35,9 +35,9 @@ const AddMotorPolicy = () => {
     const fetchData = async () => {
       try {
         const [clientsRes,PolicyRes, providersRes] = await Promise.all([
-          axios.get('http://localhost:4000/imlserver/clients'),
-          axios.get('http://localhost:4000/imlserver/Policies'),
-          axios.get('http://localhost:4000/imlserver/insurance-providers'),
+          axios.get('/imlservertwo/clients'),
+          axios.get('/imlservertwo/Policies'),
+          axios.get('/imlservertwo/insurance-providers'),
         ]);
 
         const client = clientsRes.data.find(client => client.ClientID === idData);
@@ -94,7 +94,7 @@ const AddMotorPolicy = () => {
         vehicles: form.vehicles.slice(0, form.vehicleCount),
       };
 
-      await axios.post('http://localhost:4000/imlserver/policies', data, {
+      await axios.post('/imlservertwo/policies', data, {
         headers: { 'Content-Type': 'application/json' }
       });
     const policyNo = form.PolicyNo;

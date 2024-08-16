@@ -23,7 +23,7 @@ function EditIndividual() {
     const fetchIndividual = async () => {
       if (!idEdit) return;
       try {
-        const response = await axios.get('http://localhost:4000/imlserver/clients');
+        const response = await axios.get('/imlservertwo/clients');
         console.log('Fetched Data:', response.data);
         const individualData = response.data.find(item => item.ClientID === idEdit);
         console.log('Individual Data:', individualData);
@@ -64,7 +64,7 @@ function EditIndividual() {
     }
 
     try {
-      await axios.put(`http://localhost:4000/imlserver/clients/${idEdit}`, form);
+      await axios.put(`/imlservertwo/clients/${idEdit}`, form);
       setAlertMessage('Individual details updated successfully!');
       setAlertType('success');
       navigate('/ShowIndividuals'); // Adjust the navigation as needed

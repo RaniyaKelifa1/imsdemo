@@ -33,7 +33,7 @@ const EditPolicy = () => {
       if (!policyID) return;
     
       try {
-        const { data } = await axios.get(`http://localhost:4000/imlserver/policies/`);
+        const { data } = await axios.get(`/imlservertwo/policies/`);
         console.log('Fetched Data:', data);
         const PolicyClick = data.find(item => item.PolicyID === id);
        
@@ -85,7 +85,7 @@ const EditPolicy = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:4000/imlserver/policies/${policyID}`,policy );
+      await axios.put(`/imlservertwo/policies/${policyID}`,policy );
       // navigate('/policies'); // Use navigate instead of history.push
     } catch (error) {
       console.error('Error updating policy', error.bodyType);

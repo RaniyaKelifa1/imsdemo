@@ -13,7 +13,7 @@ const AddVehicle = () => {
   useEffect(() => {
     const fetchPolicyID = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/imlserver/policies/`);
+        const response = await axios.get(`/imlservertwo/policies/`);
         const foundPolicy = response.data.find(policy => policy.PolicyNo === policyNo);
         if (foundPolicy) {
           setPolicyID(foundPolicy.PolicyID);
@@ -103,7 +103,7 @@ const AddVehicle = () => {
     }));
   
     try {
-      const response = await axios.post('http://localhost:4000/imlserver/vehicles', vehiclesData, {
+      const response = await axios.post('http://localhost:4000/imlservertwo/vehicles', vehiclesData, {
         headers: { 'Content-Type': 'application/json' }
       });
       console.log('Vehicles added successfully:', response.data);

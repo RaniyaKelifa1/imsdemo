@@ -34,7 +34,7 @@ const AddClient = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:4000/imlserver/clients', { ...form, clientType }, {
+      const response = await axios.post('/imlservertwo/clients', { ...form, clientType }, {
         headers: {
           'Content-Type': 'application/json'
         }

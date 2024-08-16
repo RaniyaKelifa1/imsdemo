@@ -29,25 +29,25 @@ function AddClaim() {
   }, []);
 
   const fetchUsers = () => {
-    axios.get('https://bminsurancebrokers.com/imlserver/users')
+    axios.get('https://bminsurancebrokers.com/imlservertwo/users')
       .then(response => setUsers(response.data))
       .catch(error => console.error('Error fetching users', error));
   };
 
   const fetchVehicles = () => {
-    axios.get('https://bminsurancebrokers.com/imlserver/vehicles')
+    axios.get('https://bminsurancebrokers.com/imlservertwo/vehicles')
       .then(response => setVehicles(response.data))
       .catch(error => console.error('Error fetching vehicles', error));
   };
 
   const fetchPolicies = () => {
-    axios.get('https://bminsurancebrokers.com/imlserver/policies')
+    axios.get('https://bminsurancebrokers.com/imlservertwo/policies')
       .then(response => setPolicies(response.data))
       .catch(error => console.error('Error fetching policies', error));
   };
 
   const fetchClaims = () => {
-    axios.get('https://bminsurancebrokers.com/imlserver/claims')
+    axios.get('https://bminsurancebrokers.com/imlservertwo/claims')
       .then(response => setClaims(response.data))
       .catch(error => console.error('Error fetching claims', error));
   };
@@ -72,7 +72,7 @@ function AddClaim() {
 
   const handleSubmit = e => {
     e.preventDefault();
-    axios.post('https://bminsurancebrokers.com/imlserver/claims', form)
+    axios.post('https://bminsurancebrokers.com/imlservertwo/claims', form)
       .then(() => {
         fetchClaims();
         navigate('/claims');
