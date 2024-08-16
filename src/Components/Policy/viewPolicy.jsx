@@ -21,10 +21,10 @@ const ShowPolicies = () => {
     const fetchData = async () => {
       try {
         const [policiesData, clientsData, providersData, vehiclesData] = await Promise.all([
-          axios.get('/imlservertwo/policies'),
-          axios.get('/imlservertwo/clients'),
-          axios.get('/imlservertwo/insurance-providers'),
-          axios.get('/imlservertwo/vehicles'),
+          axios.get('https://bminsurancebrokers.com/imlservertwo/policies'),
+          axios.get('https://bminsurancebrokers.com/imlservertwo/clients'),
+          axios.get('https://bminsurancebrokers.com/imlservertwo/insurance-providers'),
+          axios.get('https://bminsurancebrokers.com/imlservertwo/vehicles'),
         ]);
 
         setPolicies(policiesData.data);
@@ -60,7 +60,7 @@ const ShowPolicies = () => {
   const handleDelete = async (policyId) => {
     if (window.confirm('Are you sure you want to delete this policy?')) {
       try {
-        await axios.delete(`/imlservertwo/policies/${policyId}`);
+        await axios.delete(`https://bminsurancebrokers.com/imlservertwo/policies/${policyId}`);
         setPolicies((prev) => prev.filter((policy) => policy.PolicyID !== policyId));
         alert('Policy deleted successfully.');
       } catch (error) {
@@ -77,7 +77,7 @@ const ShowPolicies = () => {
   const handleVehicleDelete = async (vehicleId) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
       try {
-        await axios.delete(`/imlservertwo/vehicles/${vehicleId}`);
+        await axios.delete(`https://bminsurancebrokers.com/imlservertwo/vehicles/${vehicleId}`);
         setVehicles((prev) => prev.filter((vehicle) => vehicle.VehicleID !== vehicleId));
         alert('Vehicle deleted successfully.');
       } catch (error) {

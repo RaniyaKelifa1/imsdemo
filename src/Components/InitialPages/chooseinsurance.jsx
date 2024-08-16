@@ -26,7 +26,7 @@ const ChooseInsurance = () => {
   useEffect(() => {
     const fetchClientName = async () => {
       try {
-        const response = await axios.get(`/imlservertwo/clients/`);
+        const response = await axios.get(`https://bminsurancebrokers.com/imlservertwo/clients/`);
         for (let index = 0; index < response.data.length; index++) {
        if (response.data[index].ClientID === idClick) {
         setClientName (response.data[index].Name)

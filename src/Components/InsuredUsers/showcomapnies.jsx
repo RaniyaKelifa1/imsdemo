@@ -16,7 +16,7 @@ const ShowCompany= () => {
     const fetchCompany = async () => {
       let Company = [];
       try {
-        const response = await axios.get('/imlservertwo/clients', {
+        const response = await axios.get('https://bminsurancebrokers.com/imlservertwo/clients', {
           params: { ClientType: 'Company' }
         });
 
@@ -56,7 +56,7 @@ const ShowCompany= () => {
       const confirmDelete = window.confirm('Are you sure you want to delete this Company?');
       if (!confirmDelete) return;
 
-      await axios.delete(`/imlservertwo/clients/${clientId}`);
+      await axios.delete(`/https://bminsurancebrokers.com/imlservertwo/clients/${clientId}`);
       setCompany(prevCompany => prevCompany.filter(Company => Company.ClientID !== clientId));
       alert('Company successfully deleted.');
     } catch (error) {
