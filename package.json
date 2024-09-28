@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   
   "name": "my-project",
   
@@ -24,6 +25,30 @@
     
   "preview": "vite preview"
   
+=======
+  "name": "iml_demo_dekstop",
+  "version": "1.0.0",
+  "main": "build/electron.cjs",
+  "type": "module",
+  "homepage": "./",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "electron": "electron .",
+    "electron-build": "npm run build && electron-builder",
+    "release": "react-scripts build && electron-builder --publish=always"
+  },
+  "build": {
+    "appId": "com.example.electronapp",
+    "extends": null,
+    "files": [
+      "build/**/*",
+      "electron.cjs"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+>>>>>>> origin/master
   },
   "dependencies": {
     "@headlessui/react": "^2.1.2",
@@ -76,6 +101,7 @@
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.1.0"
   },
+<<<<<<< HEAD
   
   "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
   
@@ -86,4 +112,18 @@
   "author": "",
   
   "license": "ISC"
+=======
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+>>>>>>> origin/master
 }

@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 // eslint-disable-next-line no-unused-vars
+=======
+>>>>>>> origin/master
 import React from 'react';
 import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 import Dashboard from './Components/InitialPages/dashboard';
@@ -35,7 +38,11 @@ function App() {
     <Router>
       <Routes>
     
+<<<<<<< HEAD
         <Route path="/" element={<Dashboard />} />
+=======
+        <Route path="/" element={<WelcomePage />} />
+>>>>>>> origin/master
         <Route path="/dashboard" element={<Dashboard />}>
         <Route path="ObjectForm" element={<InsurableObjectForm />} />
           <Route path="addperson" element={<AddContactPerson />} />
@@ -43,7 +50,11 @@ function App() {
           <Route path="addaddress" element={<AddAddress />} />
           <Route path="add-organization-type" element={<AddOrganizationType />} />
           <Route path="addpersontype" element={<AddPersonType />} />
+<<<<<<< HEAD
           <Route path="demoview" element={<DemoCViewPage />} />
+=======
+          <Route path="demoview" element={<DemoViewPage />} />
+>>>>>>> origin/master
           <Route path="clientview" element={<DemoCViewPage />} />
           <Route path="addvehicle" element={<AddVehicle />} />
           <Route path="viewMachinary" element={<MachineriesViewPage />} />
