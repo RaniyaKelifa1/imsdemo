@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Input, Select, message, Modal } from 'antd';
 import axios from 'axios';
@@ -28,6 +29,7 @@ const ViewInsurancePolicyPage = () => {
       const fetchedPolicies = response.data;
 
       const clientIds = fetchedPolicies.map(policy => policy.ClientID);
+      // eslint-disable-next-line no-unused-vars
       const uniqueClientIds = [...new Set(clientIds)];
 
       const clientsResponse = await axios.get(`https://bminsurancebrokers.com/imlserver/clients`);

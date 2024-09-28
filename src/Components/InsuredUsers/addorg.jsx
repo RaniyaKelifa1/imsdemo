@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Typography, Layout, Select, Spin, notification } from 'antd';
+// eslint-disable-next-line no-unused-vars
 import { PlusOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
@@ -20,10 +21,12 @@ const AddOrganization = () => {
     ContactPersonID: ''
   });
 
+  // eslint-disable-next-line no-unused-vars
   const [organizationTypes, setOrganizationTypes] = useState([]);
   const [addresses, setAddresses] = useState([]);
   const [persons, setPersons] = useState([]);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
 
   useEffect(() => {

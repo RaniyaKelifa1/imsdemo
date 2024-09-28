@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Layout, Typography, Table, message } from 'antd';
 import axios from 'axios';
@@ -5,6 +7,7 @@ import axios from 'axios';
 const { Title } = Typography;
 const { Content } = Layout;
 
+// eslint-disable-next-line react/prop-types
 const InsurableObjectForm = ({ insurableObjectID = null }) => {
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);

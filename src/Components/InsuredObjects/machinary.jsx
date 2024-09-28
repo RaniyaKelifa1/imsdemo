@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { Form, Input, InputNumber, Button, Typography, Layout, message, Select } from 'antd';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate

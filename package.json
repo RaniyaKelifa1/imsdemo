@@ -1,32 +1,14 @@
 {
-  
   "name": "my-project",
-  
   "private": true,
-  
   "version": "0.0.0",
-  
   "proxy": " /imlserver",
-  
   "type": "module",
-  
   "scripts": {
-  
-    
-  "build": "react-scripts build && mv build dist && vite build",
-
-
-  "dev": "vite",
-  
-    
-
-  
-    
-  "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-  
-    
-  "preview": "vite preview"
-  
+    "build": "react-scripts build && mv build dist && vite build",
+    "dev": "vite",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@headlessui/react": "^2.1.2",
@@ -79,14 +61,21 @@
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.1.0"
   },
-  
   "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
-  
   "main": "postcss.config.js",
-  
   "keywords": [],
-  
   "author": "",
-  
-  "license": "ISC"
+  "license": "ISC",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }

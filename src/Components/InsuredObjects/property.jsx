@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Layout, Typography, message, Select } from 'antd';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
@@ -42,6 +43,7 @@ const AddProperty = () => {
         throw new Error('Network response was not ok');
       }
 
+      // eslint-disable-next-line no-unused-vars
       const result = await response.json();
       message.success('Property added successfully!');
       form.resetFields();

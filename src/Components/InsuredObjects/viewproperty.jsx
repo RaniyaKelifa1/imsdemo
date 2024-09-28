@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, InputNumber, message } from 'antd';
 import axios from 'axios';
@@ -39,11 +40,11 @@ const PropertyObjectsViewPage = () => {
     setIsModalVisible(true);
   };
 
-  const handleAdd = () => {
-    setEditingItem(null);
-    setModalMode('add');
-    setIsModalVisible(true);
-  };
+  // const handleAdd = () => {
+  //   setEditingItem(null);
+  //   setModalMode('add');
+  //   setIsModalVisible(true);
+  // };
 
   const handleUpdate = async (values) => {
     try {

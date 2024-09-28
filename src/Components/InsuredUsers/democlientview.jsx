@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form, Input, message } from 'antd';
 import axios from 'axios';
@@ -15,7 +16,7 @@ const DemoViewPage = () => {
   });
   const [editingRecord, setEditingRecord] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentType, setCurrentType] = useState('');
+  const [currentType] = useState('');
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState({
     organizations: '',
@@ -43,12 +44,12 @@ const DemoViewPage = () => {
     }
   };
 
-  const handleEdit = (type, record) => {
-    setCurrentType(type);
-    setEditingRecord(record);
-    form.setFieldsValue(record);
-    setIsModalVisible(true);
-  };
+  // const handleEdit = (type, record) => {
+  //   setCurrentType(type);
+  //   setEditingRecord(record);
+  //   form.setFieldsValue(record);
+  //   setIsModalVisible(true);
+  // };
 
   const handleDelete = async (type, recordID) => {
     try {

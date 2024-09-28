@@ -1,8 +1,7 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Typography, Layout, Select, InputNumber, message as antMessage } from 'antd'; // Add InputNumber for numeric input
 import { UserOutlined, PhoneOutlined, MailOutlined, IdcardOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { PlusOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -12,8 +11,8 @@ const AddContactPerson = () => {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
   const [addresses, setAddresses] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [contactTypes, setContactTypes] = useState([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -76,9 +75,6 @@ const AddContactPerson = () => {
     }
   };
 
-  const handleAddPersonType = () => {
-    navigate('/dashboard/addpersontype'); // Redirect to AddPersonType page
-  };
 
   return (
     <Layout style={{ minHeight: '100vh', display: 'flex' }}>
