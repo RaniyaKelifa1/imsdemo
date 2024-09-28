@@ -64,12 +64,12 @@ async function executeQuery(query, params) {
 }
 
 // Example route to test the database connection
-app.get('/imlserver', (req, res) => {
+app.get('/imlservertwo', (req, res) => {
   res.send('Welcome to the API----new');
 });
 
 // Clients CRUD
-app.get('/imlserver/clients', async (req, res) => {
+app.get('/imlservertwo/clients', async (req, res) => {
   try {
     const results = await executeQuery('SELECT * FROM clients', []);
     res.json(results);
@@ -79,7 +79,7 @@ app.get('/imlserver/clients', async (req, res) => {
   }
 });
 
-app.post('/imlserver/clients', [
+app.post('/imlservertwo/clients', [
   check('name').notEmpty().withMessage('Name is required'),
   check('email').isEmail().withMessage('Invalid email address'),
   check('phoneNumber').notEmpty().withMessage('Phone number is required'),
@@ -124,7 +124,7 @@ app.post('/imlserver/clients', [
   }
 });
 
-app.put('/imlserver/clients/:id', [
+app.put('/imlservertwo/clients/:id', [
   check('name').notEmpty().withMessage('Name is required'),
   check('email').isEmail().withMessage('Invalid email address'),
   check('phoneNumber').notEmpty().withMessage('Phone number is required'),
@@ -150,7 +150,7 @@ app.put('/imlserver/clients/:id', [
   }
 });
 
-app.delete('/imlserver/clients/:id', async (req, res) => {
+app.delete('/imlservertwo/clients/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -163,7 +163,7 @@ app.delete('/imlserver/clients/:id', async (req, res) => {
 });
 
 // Insurance Providers CRUD
-app.get('/imlserver/insurance-providers', async (req, res) => {
+app.get('/imlservertwo/insurance-providers', async (req, res) => {
   try {
     const results = await executeQuery('SELECT * FROM insuranceproviders', []);
     res.json(results);
@@ -173,7 +173,7 @@ app.get('/imlserver/insurance-providers', async (req, res) => {
   }
 });
 
-app.post('/imlserver/insurance-providers', [
+app.post('/imlservertwo/insurance-providers', [
   check('company_name').notEmpty().withMessage('Company name is required'),
   // Add more validation rules as needed
 ], async (req, res) => {
@@ -196,7 +196,7 @@ app.post('/imlserver/insurance-providers', [
   }
 });
 
-app.put('/imlserver/insurance-providers/:id', [
+app.put('/imlservertwo/insurance-providers/:id', [
   check('company_name').notEmpty().withMessage('Company name is required'),
   // Add more validation rules as needed
 ], async (req, res) => {
@@ -220,7 +220,7 @@ app.put('/imlserver/insurance-providers/:id', [
   }
 });
 
-app.delete('/imlserver/insurance-providers/:id', async (req, res) => {
+app.delete('/imlservertwo/insurance-providers/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -233,7 +233,7 @@ app.delete('/imlserver/insurance-providers/:id', async (req, res) => {
 });
 
 // Policies CRUD
-app.get('/imlserver/policies', async (req, res) => {
+app.get('/imlservertwo/policies', async (req, res) => {
   try {
     const results = await executeQuery('SELECT * FROM policies', []);
     res.json(results);
@@ -243,58 +243,50 @@ app.get('/imlserver/policies', async (req, res) => {
   }
 });
 
+app.post('/imlservertwo/policies', async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
+  const {
+    PolicyNo, ClientID, ProviderID, OptionID, Branch,
+    Premium, PolicyPeriodStart, PolicyPeriodEnd, GeographicalArea, Commission
+  } = req.body;
 
-app.post('/imlserver/policies', async (req, res) => {
+  console.log(req.body);  // Log the request body to see what's coming from the frontend
+
+  const values = [
+    PolicyNo, ClientID, ProviderID, OptionID, Branch,
+    Premium, PolicyPeriodStart, PolicyPeriodEnd, GeographicalArea, Commission
+  ];
+
+  console.log(values);  // Log the flattened values array
+
   try {
-    const {
-      PolicyNo, clientID, providerID, optionID,
-      branch, premium, policyPeriodStart, policyPeriodEnd,
-      geographicalArea, commission, vehicles
-    } = req.body;
-
-    // Validate inputs as needed
-
-    // Insert the policy into the Policies table
     const query = `
-      INSERT INTO Policies 
-      (PolicyNo, clientID, providerID, optionID, branch, premium, 
-      policyPeriodStart, policyPeriodEnd, geographicalArea, commission) 
-      VALUES (?, ?, ?, ?, ?, ?, ?,  ?, ?, ?)
+      INSERT INTO policies 
+      (PolicyNo, ClientID, ProviderID, OptionID, Branch, Premium, 
+      PolicyPeriodStart, PolicyPeriodEnd, GeographicalArea, Commission) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const values = [
-      PolicyNo, clientID, providerID, optionID,  branch, premium,
-      policyPeriodStart, policyPeriodEnd, geographicalArea, commission
-    ];
 
     const newPolicy = await executeQuery(query, values);
-    const policyID = newPolicy.insertId;
-
-    // Insert associated vehicles into the Vehicles table
-    if (vehicles && vehicles.length > 0) {
-      for (const vehicle of vehicles) {
-        const vehicleQuery = `
-          INSERT INTO Vehicles (policyID, makeAndModel, year, bodyType, plateNumber) 
-          VALUES (?, ?, ?, ?, ?)
-        `;
-        const vehicleValues = [
-          policyID, vehicle.makeAndModel, vehicle.year, vehicle.bodyType, vehicle.plateNumber
-        ];
-
-        await executeQuery(vehicleQuery, vehicleValues);
-      }
-    }
-
-    res.status(201).send({ message: 'Policy and vehicles added successfully' });
+    res.status(201).json({ id: newPolicy.insertId, ...req.body });
   } catch (error) {
-    console.error('Error inserting policy and vehicles:', error);
-    res.status(500).send({ error: 'Failed to add policy and vehicles' });
+    console.error('Error inserting policy:', error);
+    res.status(500).send({ error: 'Failed to add policy' });
   }
 });
 
 
-app.put('/imlserver/policies/:id', [
+app.put('/imlservertwo/policies/:id', [
   check('PolicyNo').notEmpty().withMessage('Policy number is required'),
+  check('clientID').isInt().withMessage('Client ID must be a number'),
+  check('providerID').isInt().withMessage('Provider ID must be a number'),
+  check('premium').isDecimal().withMessage('Premium must be a decimal number'),
+  check('policyPeriodStart').isISO8601().withMessage('Invalid start date'),
+  check('policyPeriodEnd').isISO8601().withMessage('Invalid end date'),
   // Add more validation rules as needed
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -303,47 +295,25 @@ app.put('/imlserver/policies/:id', [
   }
 
   const { id } = req.params;
-  let {
-    PolicyNo,
-    ClientID,
-    ProviderID,
-    OptionID,
-    Branch,
-    Premium,
-    PolicyPeriodStart,
-    PolicyPeriodEnd,
-    GeographicalArea,
-    Commission
+  const {
+    PolicyNo, clientID, providerID, optionID, branch, premium,
+    policyPeriodStart, policyPeriodEnd, geographicalArea, commission
   } = req.body;
 
-  // Replace undefined with null
-  PolicyNo = PolicyNo || null;
-  ClientID = ClientID || null;
-  ProviderID = ProviderID || null;
-  OptionID = OptionID || null;
-  Branch = Branch || null;
-  Premium = Premium || null;
-  PolicyPeriodStart = PolicyPeriodStart || null;
-  PolicyPeriodEnd = PolicyPeriodEnd || null;
-  GeographicalArea = GeographicalArea || null;
-  Commission = Commission || null;
-
   try {
-    await executeQuery(
-      `UPDATE policies 
-       SET PolicyNo = ?, 
-           ClientID = ?, 
-           ProviderID = ?, 
-           OptionID = ?, 
-           Branch = ?, 
-           Premium = ?, 
-           PolicyPeriodStart = ?, 
-           PolicyPeriodEnd = ?, 
-           GeographicalArea = ?, 
-           Commission = ?
-       WHERE PolicyID = ?`,
-      [PolicyNo, ClientID, ProviderID, OptionID, Branch, Premium, PolicyPeriodStart, PolicyPeriodEnd, GeographicalArea, Commission, id]
-    );
+    const query = `
+      UPDATE policies 
+      SET PolicyNo = ?, clientID = ?, providerID = ?, optionID = ?, 
+          branch = ?, premium = ?, policyPeriodStart = ?, 
+          policyPeriodEnd = ?, geographicalArea = ?, commission = ?
+      WHERE PolicyID = ?
+    `;
+    
+    await executeQuery(query, [
+      PolicyNo, clientID, providerID, optionID, branch, premium,
+      policyPeriodStart, policyPeriodEnd, geographicalArea, commission, id
+    ]);
+
     res.status(200).send('Policy updated successfully');
   } catch (err) {
     console.error('Error updating policy:', err);
@@ -351,10 +321,9 @@ app.put('/imlserver/policies/:id', [
   }
 });
 
-
-app.delete('/imlserver/policies/:id', async (req, res) => {
+app.delete('/imlservertwo/policies/:id', async (req, res) => {
   const { id } = req.params;
-console.log(id)
+
   try {
     await executeQuery('DELETE FROM policies WHERE PolicyID = ?', [id]);
     res.status(200).send('Policy deleted successfully');
@@ -363,9 +332,8 @@ console.log(id)
     res.status(500).send('Internal Server Error');
   }
 });
-// POST /imlserver/vehicles
-// Vehicles CRUD
-app.get('/imlserver/vehicles', async (req, res) => {
+
+app.get('/imlservertwo/vehicles', async (req, res) => {
   try {
     const results = await executeQuery('SELECT * FROM vehicles', []);
     res.json(results);
@@ -375,7 +343,7 @@ app.get('/imlserver/vehicles', async (req, res) => {
   }
 });
 
-app.post('/imlserver/vehicles', async (req, res) => {
+app.post('/imlservertwo/vehicles', async (req, res) => {
   let vehicles = req.body;
 
   // Ensure that vehicles is always an array
@@ -426,7 +394,7 @@ app.post('/imlserver/vehicles', async (req, res) => {
 
 
 
-app.put('/imlserver/vehicles/:id', [
+app.put('/imlservertwo/vehicles/:id', [
   check('PolicyID').notEmpty().withMessage('Policy ID is required'),
   check('MakeAndModel').notEmpty().withMessage('Make and Model is required'),
   check('Year').isInt().withMessage('Year must be a number'),
@@ -462,7 +430,7 @@ app.put('/imlserver/vehicles/:id', [
   }
 });
 
-app.delete('/imlserver/vehicles/:id', async (req, res) => {
+app.delete('/imlservertwo/vehicles/:id', async (req, res) => {
   const { id } = req.params;
 
   try {

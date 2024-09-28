@@ -18,7 +18,7 @@ const ViewClaims = () => {
   useEffect(() => {
     const fetchClaims = async () => {
       try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlserver/claims');
+        const response = await axios.get(' /imlserver/claims');
         setClaims(response.data);
       } catch (error) {
         console.error('Error fetching claims:', error);
@@ -27,7 +27,7 @@ const ViewClaims = () => {
 
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlserver/users');
+        const response = await axios.get(' /imlserver/users');
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -36,7 +36,7 @@ const ViewClaims = () => {
 
     const fetchPolicies = async () => {
       try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlserver/policies');
+        const response = await axios.get(' /imlserver/policies');
         setPolicies(response.data);
       } catch (error) {
         console.error('Error fetching policies:', error);
@@ -45,7 +45,7 @@ const ViewClaims = () => {
 
     const fetchVehicles = async () => {
       try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlserver/vehicles');
+        const response = await axios.get(' /imlserver/vehicles');
         setVehicles(response.data);
       } catch (error) {
         console.error('Error fetching vehicles:', error);
@@ -65,7 +65,7 @@ const ViewClaims = () => {
         return;
       }
 
-      await axios.delete(`https://bminsurancebrokers.com/imlserver/claims/${id}`);
+      await axios.delete(` /imlserver/claims/${id}`);
       setClaims(prevClaims => prevClaims.filter(claim => claim.claim_id !== id));
       alert('Claim successfully deleted.');
     } catch (error) {

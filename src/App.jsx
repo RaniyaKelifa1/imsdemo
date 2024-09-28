@@ -1,41 +1,41 @@
 // eslint-disable-next-line no-unused-vars
 import React from 'react';
 import { HashRouter as Router, Route, Routes } from 'react-router-dom';
-import Dashboard from './InitialPages/dashboard';
-import AddContactPerson from './InsuredUsers/addperson';
-import AddOrganization from './InsuredUsers/addorg';
-import AddAddress from './InsuredUsers/addAddress';
-// import DemoViewPage from './InsuredUsers/demoview';
-import DemoCViewPage from './InsuredUsers/democlientview';
-import WelcomePage from './InitialPages/loginpage';
-import AddOrganizationType from './InsuredUsers/AddOrganizationType';
-import AddPersonType from './InsuredUsers/AddPersonType';
-import AddVehicle from './InsuredObjects/vehicle';
-import AddProperty from './InsuredObjects/property';
-import AddLifeObjects from './InsuredObjects/life';
-import AddBondDetails from './InsuredObjects/bond';
-import MachineriesViewPage from './InsuredObjects/viewmachinary';
-import LifeObjectsViewPage from './InsuredObjects/lifeView';
-import VehiclesViewPage from './InsuredObjects/editVehicle';
-import PropertyObjectsViewPage from './InsuredObjects/viewproperty';
+import Dashboard from './Components/InitialPages/dashboard';
+import AddContactPerson from './Components/InsuredUsers/addperson';
+import AddOrganization from './Components/InsuredUsers/addorg';
+import AddAddress from './Components/InsuredUsers/addAddress';
+import DemoViewPage from './Components/InsuredUsers/demoview';
+import DemoCViewPage from './Components/InsuredUsers/democlientview';
+import WelcomePage from './Components/InitialPages/loginpage';
+import AddOrganizationType from './Components/InsuredUsers/AddOrganizationType';
+import AddPersonType from './Components/InsuredUsers/AddPersonType';
+import AddVehicle from './Components/InsuredObjects/vehicle';
+import AddProperty from './Components/InsuredObjects/property';
+import AddLifeObjects from './Components/InsuredObjects/life';
+import AddBondDetails from './Components/InsuredObjects/bond';
+import MachineriesViewPage from './Components/InsuredObjects/viewmachinary';
+import LifeObjectsViewPage from './Components/InsuredObjects/lifeView';
+import VehiclesViewPage from './Components/InsuredObjects/editVehicle';
+import PropertyObjectsViewPage from './Components/InsuredObjects/viewproperty';
 import './App.css';
-import AddMachinery from './InsuredObjects/machinary';
-import InsurableObjectForm from './InsuredObjects/ObjectTypes';
-import MiscellaneousObjectsViewPage from './InsuredObjects/Viewmiscel';
-import AddMiscellaneousObjectPage from './InsuredObjects/addMiscel';
-import AddInsurancePolicy from './insurancePolicy/insruancepolicy';
-import AddMotorInsurance from './insurancePolicy/addmotorinsurance';
-import MarineInsuranceForm from './insurancePolicy/addmarine';
-import FireLightningInsuranceForm from './insurancePolicy/addfireand';
-import ViewInsurancePolicyPage from './insurancePolicy/viewinsurance';
-import WorkmensCompensationForm from './InsuredObjects/workmen';
-import WorkmenCompensationViewPage from './InsuredObjects/workcompview';
+import AddMachinery from './Components/InsuredObjects/machinary';
+import InsurableObjectForm from './Components/InsuredObjects/ObjectTypes';
+import MiscellaneousObjectsViewPage from './Components/InsuredObjects/Viewmiscel';
+import AddMiscellaneousObjectPage from './Components/InsuredObjects/addMiscel';
+import AddInsurancePolicy from './Components/insurancePolicy/insruancepolicy';
+import AddMotorInsurance from './Components/insurancePolicy/addmotorinsurance';
+import MarineInsuranceForm from './Components/insurancePolicy/addmarine';
+import FireLightningInsuranceForm from './Components/insurancePolicy/addfireand';
+import ViewInsurancePolicyPage from './Components/insurancePolicy/viewinsurance';
+import WorkmensCompensationForm from './Components/InsuredObjects/workmen';
+import WorkmenCompensationViewPage from './Components/InsuredObjects/workcompview';
 function App() {
   return (
     <Router>
       <Routes>
     
-        <Route path="/" element={<WelcomePage />} />
+        <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />}>
         <Route path="ObjectForm" element={<InsurableObjectForm />} />
           <Route path="addperson" element={<AddContactPerson />} />

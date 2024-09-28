@@ -16,7 +16,7 @@ const ShowIndividuals = () => {
     const fetchIndividuals = async () => {
       let individuals = [];
       try {
-        const response = await axios.get('/https://bminsurancebrokers.com/https://bminsurancebrokers.com/imlservertwo/clients', {
+        const response = await axios.get('/ / /imlservertwo/clients', {
           params: { ClientType: 'Individual' }
         });
 
@@ -60,7 +60,7 @@ const ShowIndividuals = () => {
       const confirmDelete = window.confirm('Are you sure you want to delete this individual?');
       if (!confirmDelete) return;
 
-      await axios.delete(`https://bminsurancebrokers.com/imlservertwo/clients/${clientId}`);
+      await axios.delete(` /imlservertwo/clients/${clientId}`);
       setIndividuals(prevIndividuals => prevIndividuals.filter(individual => individual.ClientID !== clientId));
       console.log(clientId);
       console.log(individual.ClientID);

@@ -34,12 +34,13 @@ const AddClient = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('https://bminsurancebrokers.com/imlservertwo/clients', { ...form, clientType }, {
+      const response = await axios.post('http://localhost:4000/imlservertwo/clients', { ...form, clientType }, {
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      navigate('/'); // Redirect to the clients list page or a confirmation page
+      console.log(form)
+      // navigate('/');// Redirect to the clients list page or a confirmation page
     } catch (error) {
       if (error.response && error.response.data) {
         // Parse and set validation errors

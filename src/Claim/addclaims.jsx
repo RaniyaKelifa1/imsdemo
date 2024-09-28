@@ -1,210 +1,324 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FaEye, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
-function AddClaim() {
-  const [users, setUsers] = useState([]);
+const AddClaim = () => {
+  const [clients, setClients] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [policies, setPolicies] = useState([]);
-  const [claims, setClaims] = useState([]);
-  const [filteredPolicies, setFilteredPolicies] = useState([]);
   const [filteredVehicles, setFilteredVehicles] = useState([]);
+  const [filteredPolicies, setFilteredPolicies] = useState([]);
   const [form, setForm] = useState({
-    claim_date: new Date().toISOString().split('T')[0], // Automatically set to current date
-    claim_details: '',
-    user_id: '',
-    vehicle_id: '',
-    policy_id: '',
-    amount: '',
-    status: 'Pending', // Default status
+    DateOfAccident: new Date().toISOString().split('T')[0],
+    NatureOfAccident: '',
+    PlaceOfAccident: '',
+    IsThirdPartyInvolved: 'No',
+    ThirdPartyName: '',
+    ThirdPartyPhoneNumber: '',
+    DriverLicenseNo: '',
+    DriverLevel: '',
+    ClaimStatus: 'Notified',
+    NotifiedDate: new Date().toISOString().split('T')[0],
+    WorkInOrderDate: '',
+    SettledDate: '',
+    SeasonalStatusReport: '',
+    PolicyID: '',
+    VehicleID: '',
+    ClientID: '',
   });
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUsers();
+    fetchClients();
     fetchVehicles();
     fetchPolicies();
-    fetchClaims();
   }, []);
 
-  const fetchUsers = () => {
-    axios.get('https://bminsurancebrokers.com/imlservertwo/users')
-      .then(response => setUsers(response.data))
-      .catch(error => console.error('Error fetching users', error));
+  const fetchClients = () => {
+    axios.get('http://localhost:4000/imlservertwo/clients')
+      .then(response => setClients(response.data))
+      .catch(error => console.error('Error fetching clients', error));
   };
 
   const fetchVehicles = () => {
-    axios.get('https://bminsurancebrokers.com/imlservertwo/vehicles')
+    axios.get('http://localhost:4000/imlservertwo/vehicles')
       .then(response => setVehicles(response.data))
       .catch(error => console.error('Error fetching vehicles', error));
   };
 
   const fetchPolicies = () => {
-    axios.get('https://bminsurancebrokers.com/imlservertwo/policies')
+    axios.get('http://localhost:4000/imlservertwo/policies')
       .then(response => setPolicies(response.data))
       .catch(error => console.error('Error fetching policies', error));
-  };
-
-  const fetchClaims = () => {
-    axios.get('https://bminsurancebrokers.com/imlservertwo/claims')
-      .then(response => setClaims(response.data))
-      .catch(error => console.error('Error fetching claims', error));
   };
 
   const handleChange = e => {
     const { name, value } = e.target;
     setForm(prevForm => ({
       ...prevForm,
-      [name]: value
+      [name]: value,
     }));
 
-    if (name === 'user_id') {
-      const filtered = vehicles.filter(vehicle => vehicle.owner_id === value);
-      setFilteredVehicles(filtered);
+    if (name === 'ClientID') {
+      const filtered = policies.filter(policy => policy.ClientID === value);
+      setFilteredPolicies(filtered);
+      setForm(prevForm => ({
+        ...prevForm,
+        PolicyID: '',
+        VehicleID: '',
+      }));
+      setFilteredVehicles([]);
     }
 
-    if (name === 'vehicle_id') {
-      const filtered = policies.filter(policy => policy.vehicle_id === value);
-      setFilteredPolicies(filtered);
+    if (name === 'PolicyID') {
+      const filtered = vehicles.filter(vehicle => vehicle.PolicyID === value);
+      setFilteredVehicles(filtered);
+      setForm(prevForm => ({
+        ...prevForm,
+        VehicleID: '',
+      }));
     }
   };
 
   const handleSubmit = e => {
     e.preventDefault();
-    axios.post('https://bminsurancebrokers.com/imlservertwo/claims', form)
+    axios.post('http://localhost:4000/imlservertwo/claims', form)
       .then(() => {
-        fetchClaims();
         navigate('/claims');
       })
       .catch(error => console.error('Error adding claim', error));
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Add Claim Section */}
-          <div className="bg-white p-8 rounded shadow-md">
-            <h2 className="mb-8 text-3xl font-bold text-gray-800 text-center">Add Claim</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="date"
-                name="claim_date"
-                value={form.claim_date}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-                hidden // Automatically set to current date
-              />
-              <textarea
-                name="claim_details"
-                value={form.claim_details}
-                onChange={handleChange}
-                placeholder="Enter claim details"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-                rows="4"
-              />
-              <select
-                name="user_id"
-                value={form.user_id}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              >
-                <option value="">Select user</option>
-                {users.map(user => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="vehicle_id"
-                value={form.vehicle_id}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              >
-                <option value="">Select vehicle</option>
-                {filteredVehicles.map(vehicle => (
-                  <option key={vehicle.id} value={vehicle.id}>
-                    {vehicle.license_plate}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="policy_id"
-                value={form.policy_id}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              >
-                <option value="">Select policy</option>
-                {filteredPolicies.map(policy => (
-                  <option key={policy.policy_id} value={policy.policy_id}>
-                    {policy.policy_name}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                name="amount"
-                value={form.amount}
-                onChange={handleChange}
-                placeholder="Enter claim amount"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              />
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800"
-              >
-                <option value="Pending">Pending</option>
-                <option value="Solved">Solved</option>
-                <option value="Declined">Declined</option>
-              </select>
-              <button type="submit" className="w-full py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 transition duration-200">
-                Add Claim
-              </button>
-            </form>
+    <section className="min-h-screen flex items-center justify-center bg-gray-800 relative">
+      <div className="absolute inset-0 z-0"></div>
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="bg-gray-900 p-8 rounded shadow-md max-w-4xl mx-auto">
+          
+          <h2 className="mb-8 text-3xl font-bold text-gray-100 text-center">
+            Add Claim
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <select
+                    name="ClientID"
+                    value={form.ClientID}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  >
+                    <option value="">Select Client</option>
+                    {clients.map(client => (
+                      <option key={client.ClientID} value={client.ClientID}>
+                        {client.Name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <select
+                    name="PolicyID"
+                    value={form.PolicyID}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                    disabled={!form.ClientID}
+                  >
+                    <option value="">Select Policy</option>
+                    {filteredPolicies.map(policy => (
+                      <option key={policy.PolicyID} value={policy.PolicyID}>
+                        {policy.PolicyNo}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <select
+                    name="VehicleID"
+                    value={form.VehicleID}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                    disabled={!form.PolicyID}
+                  >
+                    <option value="">Select Vehicle</option>
+                    {filteredVehicles.map(vehicle => (
+                      <option key={vehicle.VehicleID} value={vehicle.VehicleID}>
+                        {vehicle.RegistrationNo}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                  <label htmlFor="DateOfAccident" className="block text-gray-100">Date of Accident</label>
+                  <input
+                    type="date"
+                    name="DateOfAccident"
+                    value={form.DateOfAccident}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  />
+              
+                <div>
+                  <label htmlFor="NatureOfAccident" className="block text-gray-100">Nature of Accident</label>
+                  <textarea
+                    name="NatureOfAccident"
+                    value={form.NatureOfAccident}
+                    onChange={handleChange}
+                    placeholder="Describe the nature of the accident"
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                    rows="3"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="PlaceOfAccident" className="block text-gray-100">Place of Accident</label>
+                  <input
+                    type="text"
+                    name="PlaceOfAccident"
+                    value={form.PlaceOfAccident}
+                    onChange={handleChange}
+                    placeholder="Enter the place of the accident"
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="IsThirdPartyInvolved" className="block text-gray-100">Is Third Party Involved?</label>
+                  <select
+                    name="IsThirdPartyInvolved"
+                    value={form.IsThirdPartyInvolved}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  >
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                {form.IsThirdPartyInvolved === 'Yes' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="ThirdPartyName" className="block text-gray-100">Third Party Name</label>
+                      <input
+                        type="text"
+                        name="ThirdPartyName"
+                        value={form.ThirdPartyName}
+                        onChange={handleChange}
+                        placeholder="Enter third party name"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="ThirdPartyPhoneNumber" className="block text-gray-100">Third Party Phone Number</label>
+                      <input
+                        type="text"
+                        name="ThirdPartyPhoneNumber"
+                        value={form.ThirdPartyPhoneNumber}
+                        onChange={handleChange}
+                        placeholder="Enter third party phone number"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                      />
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <label htmlFor="DriverLicenseNo" className="block text-gray-100">Driver License Number</label>
+                  <input
+                    type="text"
+                    name="DriverLicenseNo"
+                    value={form.DriverLicenseNo}
+                    onChange={handleChange}
+                    placeholder="Enter driver license number"
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="DriverLevel" className="block text-gray-100">Driver Level</label>
+                  <input
+                    type="text"
+                    name="DriverLevel"
+                    value={form.DriverLevel}
+                    onChange={handleChange}
+                    placeholder="Enter driver level"
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="ClaimStatus" className="block text-gray-100">Claim Status</label>
+                  <select
+                    name="ClaimStatus"
+                    value={form.ClaimStatus}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  >
+                    <option value="Notified">Notified</option>
+                    <option value="Work in Order">Work in Order</option>
+                    <option value="Settled">Settled</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="NotifiedDate" className="block text-gray-100">Notified Date</label>
+                    <input
+                      type="date"
+                      name="NotifiedDate"
+                      value={form.NotifiedDate}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="WorkInOrderDate" className="block text-gray-100">Work In Order Date</label>
+                    <input
+                      type="date"
+                      name="WorkInOrderDate"
+                      value={form.WorkInOrderDate}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="SettledDate" className="block text-gray-100">Settled Date</label>
+                    <input
+                      type="date"
+                      name="SettledDate"
+                      value={form.SettledDate}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="SeasonalStatusReport" className="block text-gray-100">Seasonal Status Report</label>
+                  <input
+                    type="text"
+                    name="SeasonalStatusReport"
+                    value={form.SeasonalStatusReport}
+                    onChange={handleChange}
+                    placeholder="Enter seasonal status report"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-700 text-gray-100"
+                  />
+                </div>
            
-          </div>
-
-          {/* List of Claims Section */}
-          <div className="bg-white p-8 rounded shadow-md">
-            <h2 className="mb-8 text-3xl font-bold text-gray-800 text-center">List of Claims</h2>
-            <ul className="space-y-4">
-              {claims.map(claim => (
-                <li key={claim.claim_id} className="p-4 border border-gray-300 rounded-md bg-gray-50">
-                  <div className="text-lg font-semibold text-gray-700">Claim ID: {claim.claim_id}</div>
-                  <div className="text-sm text-gray-600">Details: {claim.claim_details}</div>
-                  <div className="text-sm text-gray-600">
-                    User: {users.find(user => user.id === claim.user_id)?.name || 'N/A'}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Vehicle: {vehicles.find(vehicle => vehicle.id === claim.vehicle_id)?.license_plate || 'N/A'}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Policy: {policies.find(policy => policy.policy_id === claim.policy_id)?.policy_name || 'N/A'}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Amount: ${claim.amount}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Status: {claim.status}
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 flex justify-end">
-              <button onClick={() => navigate('/viewclaims')} className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">
-                <FaEye className="mr-2" />
-                View
-              </button>
+              </div>
             </div>
-          </div>
+            <button
+              type="submit"
+              className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700"
+            >
+              Add Claim
+            </button>
+          </form>
         </div>
       </div>
     </section>
   );
-}
+};
 
 export default AddClaim;

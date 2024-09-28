@@ -28,7 +28,7 @@ function EditClaim() {
   useEffect(() => {
     const fetchClaim = async () => {
       try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlservertwo/claims');
+        const response = await axios.get(' /imlservertwo/claims');
         const fetchedClaim = response.data.find(claim => claim.claim_id === idEdit);
         if (fetchedClaim) {
           setClaim(fetchedClaim);
@@ -46,7 +46,7 @@ function EditClaim() {
 
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlservertwo/users');
+        const response = await axios.get(' /imlservertwo/users');
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -57,7 +57,7 @@ function EditClaim() {
 
     const fetchVehicles = async () => {
       try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlservertwo/vehicles');
+        const response = await axios.get(' /imlservertwo/vehicles');
         setVehicles(response.data);
       } catch (error) {
         console.error('Error fetching vehicles:', error);
@@ -68,7 +68,7 @@ function EditClaim() {
 
     const fetchPolicies = async () => {
       try {
-        const response = await axios.get('https://bminsurancebrokers.com/imlservertwo/policies');
+        const response = await axios.get(' /imlservertwo/policies');
         setPolicies(response.data);
       } catch (error) {
         console.error('Error fetching policies:', error);
@@ -114,7 +114,7 @@ function EditClaim() {
       const formattedDate = new Date(form.claim_date).toISOString().split('T')[0];
       const { claim_id, ...updatedData } = { ...form, claim_date: formattedDate };
 
-      await axios.put(`https://bminsurancebrokers.com/imlservertwo/claims/${idEdit}`, updatedData);
+      await axios.put(` /imlservertwo/claims/${idEdit}`, updatedData);
       setAlertMessage('Claim details updated successfully!');
       setAlertType('success');
       navigate('/viewclaims'); // Adjust navigation as needed

@@ -21,10 +21,10 @@ const ShowPolicies = () => {
     const fetchData = async () => {
       try {
         const [policiesData, clientsData, providersData, vehiclesData] = await Promise.all([
-          axios.get('https://bminsurancebrokers.com/imlservertwo/policies'),
-          axios.get('https://bminsurancebrokers.com/imlservertwo/clients'),
-          axios.get('https://bminsurancebrokers.com/imlservertwo/insurance-providers'),
-          axios.get('https://bminsurancebrokers.com/imlservertwo/vehicles'),
+          axios.get('http://localhost:4000/imlservertwo/policies'),
+          axios.get('http://localhost:4000/imlservertwo/clients'),
+          axios.get('http://localhost:4000/imlservertwo/insurance-providers'),
+          axios.get('http://localhost:4000/imlservertwo/vehicles'),
         ]);
 
         setPolicies(policiesData.data);
@@ -55,12 +55,13 @@ const ShowPolicies = () => {
 
   const handleNavigateEdit = (policyId) => {
     navigate('/editPolicy', { state: { id: policyId } });
+
   };
 
   const handleDelete = async (policyId) => {
     if (window.confirm('Are you sure you want to delete this policy?')) {
       try {
-        await axios.delete(`https://bminsurancebrokers.com/imlservertwo/policies/${policyId}`);
+        await axios.delete(`http://localhost:4000/imlservertwo/policies/${policyId}`);
         setPolicies((prev) => prev.filter((policy) => policy.PolicyID !== policyId));
         alert('Policy deleted successfully.');
       } catch (error) {
@@ -77,7 +78,7 @@ const ShowPolicies = () => {
   const handleVehicleDelete = async (vehicleId) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
       try {
-        await axios.delete(`https://bminsurancebrokers.com/imlservertwo/vehicles/${vehicleId}`);
+        await axios.delete(` http://localhost:4000/imlservertwo/vehicles/${vehicleId}`);
         setVehicles((prev) => prev.filter((vehicle) => vehicle.VehicleID !== vehicleId));
         alert('Vehicle deleted successfully.');
       } catch (error) {
@@ -140,7 +141,7 @@ const ShowPolicies = () => {
               Export Selected
             </button>
             <button
-              onClick={() =>  navigate('/insurance/Motor-Vehicle', { state: { idData: clientIdFilter ,} })}
+             onClick={() =>  navigate('/insurance/Motor-Vehicle', { state: { idData: clientIdFilter} })}
               className="flex items-center text-blue-600 hover:text-blue-800"
             >
               <FaEdit className="mr-2" />
