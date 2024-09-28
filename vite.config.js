@@ -10,9 +10,13 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      // eslint-disable-next-line no-undef
       '@components': path.resolve(__dirname, 'src/components'), // Alias for easier imports
+      // eslint-disable-next-line no-undef
       '@utils': path.resolve(__dirname, 'src/utils'),
+      // eslint-disable-next-line no-undef
       '@styles': path.resolve(__dirname, 'src/styles'),
+      // eslint-disable-next-line no-undef
       '@assets': path.resolve(__dirname, 'src/assets'),
     },
   },
