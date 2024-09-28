@@ -21,7 +21,7 @@ const ViewInsurancePolicyPage = () => {
   useEffect(() => {
     fetchPolicies();
     fetchPolicyTypes();
-  }, []);
+  }, );
 
   const fetchPolicies = async () => {
     try {
