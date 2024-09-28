@@ -1,8 +1,6 @@
-<<<<<<< HEAD
 /* eslint-disable react/no-unescaped-entities */
+
 // eslint-disable-next-line no-unused-vars
-=======
->>>>>>> origin/master
 import React, { useState } from 'react';
 import { Layout, Menu, Typography } from 'antd';
 import {
